@@ -28,7 +28,7 @@ int main( void )
 	cout << "===============================================================================" << endl;
 	cout << ": Program  : WordSearcher                                                     :" << endl;
 	cout << ": Autor    : Sobiemir                                                         :" << endl;
-	cout << ": Wersja   : 1.0                                                              :" << endl;
+	cout << ": Wersja   : 0.1                                                              :" << endl;
 	cout << ": Opis     : Program wyszukuje podana fraze w plikach (wyszukiwanie grupowe)  :" << endl;
 	cout << "===============================================================================" << endl;
 	
