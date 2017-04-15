@@ -2,11 +2,11 @@
  *  WordSearcher
  *  Copyright (C) 2013-2017 sobiemir <sobiemir@aculo.pl>
  * 
- *  WordSearcher is free software: you can redistribute it and/or modify  
+ *  This program is free software: you can redistribute it and/or modify  
  *  it under the terms of the GNU Lesser General Public License as   
  *  published by the Free Software Foundation, version 3.
  *
- *  Word Searcher is distributed in the hope that it will be useful, but 
+ *  This program is distributed in the hope that it will be useful, but 
  *  WITHOUT ANY WARRANTY; without even the implied warranty of 
  *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU 
  *  Lesser General Public License for more details.
@@ -28,15 +28,17 @@ int main( void )
     bool continueSearch = true;
     bool saveLastFolder = false;
     bool saveLastWord   = false;
+    
+    char phrase[2048];
+    char folder[2048];
 
-    string folder;
-    string phrase;
-
-    int fileNums   = 0;
-    int folderNums = 0;
+    size_t folderLen;
 
     vector<string> foundFolders;
     vector<string> phraseList;
+    
+    int fileNums = 0;
+    int folderNums = 0;
 
     DIR *dirPointer;
     struct dirent *dirEntry;
@@ -48,33 +50,34 @@ int main( void )
     cout << ": Version : 0.1.1                                                             :" << endl;
     cout << ": Desc    : Searching for phrase in files located in given directory.         :" << endl;
     cout << "===============================================================================" << endl;
-    
+
     while( continueSearch )
     {
-        // scieżka do folderu
+        // ścieżka do folderu
         if( !saveLastFolder )
         {
-            cout << endl << "Sciezka do folderu: ";
-            cin  >> folder;
+            cout << endl << "Folder: ";
+            cin.getline( folder, sizeof(folder) );
+            folderLen = strlen( folder );
         }
         // szukana fraza
         if( !saveLastWord )
         {
-            cout << endl << "Szukana fraza: ";
-            cin  >> phrase;
+            cout << endl << "Fraza: ";
+            cin.getline( phrase, sizeof(phrase) );
         }
 
         // dodaj szukany folder do listy
         foundFolders.push_back( folder );
         cout << endl;
-        cout << "Prosze czekac... trwa wyszukiwanie..." << endl;
+        cout << "Wyszukiwanie..." << endl;
         cout << "===============================================================================" << endl;
 
         // szukanie frazy
-        while( foundFolders.size( ) > 0 )
+        while( foundFolders.size() > 0 )
         {
             string currFolder   = foundFolders.at( 0 );
-            dirPointer          = opendir( currFolder.c_str( ) );
+            dirPointer          = opendir( currFolder.c_str() );
 
             // wyświetlanie postępu - foldery
             cout << endl;
@@ -83,7 +86,7 @@ int main( void )
 
             if( dirPointer != NULL )
             {
-                while( dirEntry = readdir( dirPointer ) )
+                while( (dirEntry = readdir(dirPointer)) )
                 {
                     string  fileName      = currFolder + dirEntry->d_name;
                     string  shortFileName = currFolder + dirEntry->d_name;
@@ -101,12 +104,12 @@ int main( void )
                     {
                         // otwórz plik i wyświetl postęp - pliki
                         fileStream.open( fileName, std::ios::in );
-                        shortFileName.erase( 0, folder.size() );
+                        shortFileName.erase( 0, folderLen );
                         fileNums++;
-                        cout << "   - " << shortFileName << endl;
+                        cout << "   - " << shortFileName << "..." << endl;
 
                         // szukaj frazy
-                        while( getline( fileStream, textLine, '\n' ) )
+                        while( getline(fileStream, textLine, '\n') )
                         {
                             size_t foundPos = textLine.find( phrase );
                             if( foundPos != std::string::npos )
@@ -116,19 +119,19 @@ int main( void )
                                 break;
                             }
                         }
-                        fileStream.close();
+                        fileStream.close( );
                     }
                 }
             }
             else
-                cout << "Nie znaleziono folderu o takiej nazwie!";
+                cout << "Folder o podanej nazwie nie istnieje!";
 
             // zamnkij folder
             closedir( dirPointer );
-            foundFolders.erase( foundFolders.begin( ) );
+            foundFolders.erase( foundFolders.begin() );
         }
 
-        int phraseListSize = phraseList.size( );
+        int phraseListSize = phraseList.size();
         int userOption     = 0;
 
         // wyświetlanie wyników
@@ -138,17 +141,30 @@ int main( void )
             cout << "-------------------------------------------------------------------------------" << endl;
             cout << "Przeszukiwany katalog: " << folder << endl;
             cout << "Szukana fraza: " << phrase << endl;
-            cout << "Przeszukano " << fileNums  folderNums << " elementow, w tym:" << endl;
+            cout << "Przeszukano " << fileNums + folderNums << " elementow, w tym:" << endl;
             cout << "   - " << fileNums << " elementow to pliki." << endl;
             cout << "   - " << folderNums << " elementow to foldery." << endl;
             cout << "   - " << phraseListSize << " plikow spelnia kryteria wyszukiwania" << endl;
             cout << "-------------------------------------------------------------------------------" << endl;
             cout << "Lista plikow spelniajacych kryteria wyszukiwania:" << endl;
             cout << "-------------------------------------------------------------------------------" << endl;
-            for( int x = 0; x < phraseListSize; ++x ) cout << "   - " << phraseList.at( x ) << endl;
+
+            for( int x = 0; x < phraseListSize; ++x )
+                cout << "   - " << phraseList.at( x ) << endl;
         }
         else
-            cout << endl << "Podana fraza nie zostala znaleziona w zadnym pliku!" << endl;
+        {
+            cout << endl;
+            cout << "-------------------------------------------------------------------------------" << endl;
+            cout << "Przeszukiwany katalog: " << folder << endl;
+            cout << "Szukana fraza: " << phrase << endl;
+            cout << "Przeszukano " << fileNums + folderNums << " elementow, w tym:" << endl;
+            cout << "   - " << fileNums << " elementow to pliki." << endl;
+            cout << "   - " << folderNums << " elementow to foldery." << endl;
+            cout << "   - " << phraseListSize << " plikow spelnia kryteria wyszukiwania" << endl;
+            cout << "-------------------------------------------------------------------------------" << endl;
+            cout << "Podana fraza nie zostala znaleziona w zadnym pliku!" << endl;
+        }
 
         // menu dodatkowe
         cout << endl;
@@ -161,7 +177,7 @@ int main( void )
         cout << "Wybierz opcje: ";
         cin  >> userOption;
 
-        // Od nowa...
+        // od nowa...
         switch( userOption )
         {
             case 1:  saveLastFolder = false; saveLastWord = false; break;
@@ -170,8 +186,11 @@ int main( void )
             case 4:  saveLastFolder = true;  saveLastWord = false; break;
             default: continueSearch = false;
         }
-        // Czyszczenie listy wyników
-        phraseList.clear( );
+        // czyszczenie listy wyników
+        phraseList.clear();
+
+        cin.ignore( INT_MAX, '\n' );
+        cin.clear();
     }
     return 0;
 }
