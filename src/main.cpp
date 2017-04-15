@@ -15,9 +15,11 @@
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-// sprawdź czy kompilator ma do czynienia z systemem Windows
+// sprawdź z jakim systemem program ma do czynienia
 #ifdef _WIN32
-#   define SYSTEM_WINDOWS
+#   define MSD_SYSTEM_WINDOWS
+#elif defined __linux__
+#   define MSD_SYSTEM_LINUX
 #endif
 
 #include <string>
@@ -27,7 +29,7 @@
 #include <cstring>
 #include <climits>
 
-#ifdef SYSTEM_WINDOWS
+#ifdef MSD_SYSTEM_WINDOWS
 #   include "dirent.h"
 #else
 #   include <dirent.h>
@@ -131,7 +133,7 @@ int main( void )
                                 break;
                             }
                         }
-                        fileStream.close();
+                        fileStream.close( );
                     }
                 }
             }
