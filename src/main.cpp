@@ -37,6 +37,49 @@
 
 using namespace std;
 
+/**
+ * Trim obustronny.
+ * @param  data Dane do sprawdzenia i obcięcia.
+ * @param  len  Długość danych.
+ * @return      Długość danych po obcięciu.
+ */
+int trim_charstr( char *data, size_t len )
+{
+    int pos = 0;
+
+    if( len == 0 )
+        len = strlen( data );
+
+    cout << "LEN:" << len << endl;
+
+    for( ; pos < len; ++pos )
+        if( data[pos] != ' ' )
+            break;
+
+    if( pos != 0 && data[pos] != '\0' )
+        memmove( data, &data[pos], len - pos );
+
+    len -= pos;
+    cout << "LEN:" << len << endl;
+
+    for( pos = len; pos > 0; --pos )
+        if( data[pos] != ' ' && data[pos] != '\0' )
+        {
+            data[++pos] = '\0';
+            break;
+        }
+
+    if( pos == 0 )
+        data[0] = '\0';
+
+    cout << "POS:" << pos << endl;
+    return pos;
+}
+
+/**
+ * Funkcja główna...
+ * @return  Kod błędu
+ */
 int main( void )
 {
     bool continueSearch = true;
@@ -70,9 +113,17 @@ int main( void )
         // ścieżka do folderu
         if( !saveLastFolder )
         {
-            cout << endl << "Folder: ";
+            cout << endl << "Folder [./]: ";
             cin.getline( folder, sizeof(folder) );
-            folderLen = strlen( folder );
+
+            folderLen = trim_charstr( folder, 0 );
+
+            // w przypadku gdy użytkownik nie poda ścieżki do folderu
+            // przyjmuj aktualną ścieżkę
+            if( folderLen == 0 )
+                folder[0] = '.',
+                folder[1] = '/',
+                folder[2] = '\0';
         }
         // szukana fraza
         if( !saveLastWord )
