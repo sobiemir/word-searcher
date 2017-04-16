@@ -50,8 +50,6 @@ int trim_charstr( char *data, size_t len )
     if( len == 0 )
         len = strlen( data );
 
-    cout << "LEN:" << len << endl;
-
     for( ; pos < len; ++pos )
         if( data[pos] != ' ' )
             break;
@@ -60,7 +58,9 @@ int trim_charstr( char *data, size_t len )
         memmove( data, &data[pos], len - pos );
 
     len -= pos;
-    cout << "LEN:" << len << endl;
+
+    // należy zakończyć ciąg, gdyż może powodować późniejsze błędy
+    data[len] = '\0';
 
     for( pos = len; pos > 0; --pos )
         if( data[pos] != ' ' && data[pos] != '\0' )
@@ -72,7 +72,6 @@ int trim_charstr( char *data, size_t len )
     if( pos == 0 )
         data[0] = '\0';
 
-    cout << "POS:" << pos << endl;
     return pos;
 }
 
@@ -104,7 +103,7 @@ int main( void )
     cout << "===============================================================================" << endl;
     cout << ": Program : WordSearcher                                                      :" << endl;
     cout << ": Author  : sobiemir                                                          :" << endl;
-    cout << ": Version : 0.1.2                                                             :" << endl;
+    cout << ": Version : 0.1.3                                                             :" << endl;
     cout << ": Desc    : Searching for phrase in files located in given directory.         :" << endl;
     cout << "===============================================================================" << endl;
 
@@ -123,7 +122,13 @@ int main( void )
             if( folderLen == 0 )
                 folder[0] = '.',
                 folder[1] = '/',
-                folder[2] = '\0';
+                folder[2] = '\0',
+                folderLen = 2;
+
+            // dodaj ukośnik gdy go brakuje
+            if( folderLen > 1 && folder[folderLen-1] != '/' && folder[folderLen-1] != '\\' && folderLen < 2047 )
+                folder[folderLen] = '/',
+                folder[++folderLen] = '\0';
         }
         // szukana fraza
         if( !saveLastWord )
