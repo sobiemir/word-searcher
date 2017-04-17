@@ -15,8 +15,8 @@ int     sizechanged  = 0,
 
 string displayFolder;
 
-// TextBox folder( "Folder : ", "./", 0 );
-// TextBox phrase( "Fraza  : ", "", 0 );
+TextBox folder( "Folder : ", "./", 0 );
+TextBox phrase( "Fraza  : ", "", 0 );
 
 void destroy_windows()
 {
@@ -72,11 +72,11 @@ void terminal_resize()
 
     keypad( mainwindow, TRUE );
 
-    // folder.SetSize( COLS - 2 );
-    // folder.SetWindow( mainwindow );
+    folder.SetSize( COLS - 2 );
+    folder.SetWindow( mainwindow );
 
-    // phrase.SetSize( COLS - 2 );
-    // phrase.SetWindow( mainwindow );
+    phrase.SetSize( COLS - 2 );
+    phrase.SetWindow( mainwindow );
 
     // mvwhline( mainwindow, 0, 0, ACS_HLINE, COLS );
 
@@ -85,8 +85,8 @@ void terminal_resize()
     mvwprintw( mainwindow, 0, COLS - 23, " WordSearcher v0.2.0 " );
     wattroff( mainwindow, textstyle[1] );
 
-    // folder.Print();
-    // phrase.Print();
+    folder.Print();
+    phrase.Print();
 
     mvwhline( mainwindow, 3, 1, ACS_HLINE, COLS - 2 );
     mvwhline( mainwindow, (LINES - 3) / 2 + 2, 1, ACS_HLINE, COLS - 2 );
@@ -107,10 +107,10 @@ void loop()
         switch( chr )
         {
             case 4: /* chr != ^D */
-                // folder.Focus();
+                folder.Focus();
             break;
             case 6: /* chr != ^F */
-                // phrase.Focus();
+                phrase.Focus();
             break;
             case 10: case 13: /* RETURN */
 
@@ -138,10 +138,10 @@ int main( int argc, char *argv[] )
 
     init_colors();
 
-    // folder.SetPosition( 1, 1 );
-    // phrase.SetPosition( 1, 2 );
-    // folder.SetStyle( textstyle[0], 0 );
-    // phrase.SetStyle( textstyle[0], 0 );
+    folder.SetPosition( 1, 1 );
+    phrase.SetPosition( 1, 2 );
+    folder.SetStyle( textstyle[0], 0 );
+    phrase.SetStyle( textstyle[0], 0 );
 
     terminal_resize();
 
