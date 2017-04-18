@@ -17,6 +17,8 @@
 
 #include "searcher.hpp"
 
+// =====================================================================================================================
+
 Searcher::Searcher( string folder, string phrase, string filter )
 {
     this->_Folder = folder;
@@ -26,12 +28,18 @@ Searcher::Searcher( string folder, string phrase, string filter )
     this->Printer = NULL;
 }
 
+// =====================================================================================================================
+
 void Searcher::Criteria( string folder, string phrase, string filter )
 {
     this->_Folder = folder;
     this->_Phrase = phrase;
     this->_Filter = filter;
+
+    this->ParseExtensions( filter );
 }
+
+// =====================================================================================================================
 
 void Searcher::Run( void )
 {
@@ -39,7 +47,7 @@ void Searcher::Run( void )
            filenums = 0;
 
     vector<string> dirlist;
-    
+
     DIR   *dirptr;
     struct dirent *direntry;
 
@@ -76,6 +84,10 @@ void Searcher::Run( void )
                 }
                 else
                 {
+                    // pomijanie plików, które nie spełniają kryteriów
+                    if( !this->CheckExtension(filename) )
+                        continue;
+
                     // otwórz plik
                     filestream.open( filename.c_str(), std::ios::in );
                     shortfname.erase( 0, this->_Folder.size() );
@@ -110,20 +122,28 @@ void Searcher::Run( void )
     }
 }
 
+// =====================================================================================================================
+
 string Searcher::GetFolder( void )
 {
     return this->_Folder;
 }
+
+// =====================================================================================================================
 
 string Searcher::GetPhrase( void )
 {
     return this->_Phrase;
 }
 
+// =====================================================================================================================
+
 string Searcher::GetFilter( void )
 {
     return this->_Filter;
 }
+
+// =====================================================================================================================
 
 void Searcher::Trim( string &str )
 {
@@ -143,4 +163,116 @@ void Searcher::Trim( string &str )
 
     if( rightshift + 1 < str.size() )
         str.erase( rightshift + 1 );
+}
+
+// =====================================================================================================================
+
+void Searcher::ParseExtensions( string ext )
+{
+    // wyczyść poprzednie filtry
+    this->_ExtensionList.clear();
+    this->_Modifiers = 0;
+
+    size_t occ = ext.find( '/', 0 );
+    while( occ != string::npos )
+    {
+        int start = occ;
+        occ = ext.find( '/', occ + 1 );
+
+        string data;
+        if( occ != string::npos )
+            data = ext.substr( start + 1, occ - (start + 1) );
+        else
+            data = ext.substr( start + 1 );
+
+        if( !data.empty() )
+            this->_ExtensionList.push_back( data );
+    }
+
+    for( int x = 0, y = ext.size(); x > -1 && x < y; ++x )
+        switch( ext[x] )
+        {
+            case '/': x = -2; break;
+            case '*': this->_Modifiers |= WSD_MOD_ALL; break;
+            case '-': this->_Modifiers |= WSD_MOD_EXCLUDE; break;
+            case '!': this->_Modifiers |= WSD_MOD_CASESENSITIVE; break;
+            case '@': this->_Modifiers |= WSD_MOD_NOEXT; break;
+        }
+
+    // zamień na małe litery w przypadku gdy wyszukiwanie nie uwzględnia wielkości znaków
+    if( !(this->_Modifiers & WSD_MOD_CASESENSITIVE) )
+        for( size_t x = 0; x < this->_ExtensionList.size(); ++x )
+            for( size_t y = 0; y < this->_ExtensionList[x].size(); ++y )
+                this->_ExtensionList[x][y] = tolower( this->_ExtensionList[x][y] );
+}
+
+// =====================================================================================================================
+
+bool Searcher::CheckExtension( string filename )
+{
+    int dotpos = -1;
+
+    if( (this->_Modifiers & (WSD_MOD_NOEXT | WSD_MOD_ALL)) == WSD_MOD_ALL )
+        return true;
+
+    // wyszukaj kropkę w nazwie pliku
+    for( int x = filename.size() - 1; x >= 0; --x )
+    {
+        if( filename[x] == '/' )
+            break;
+        else if( filename[x] == '.' )
+        {
+            dotpos = x + 1;
+            break;
+        }
+    }
+
+    // plik bez rozszerzenia domyślnie jest odrzucany, po przekazaniu modyfikatora już nie
+    if( dotpos == -1 )
+    {
+        if( (this->_Modifiers & (WSD_MOD_NOEXT | WSD_MOD_ALL)) == WSD_MOD_NOEXT )
+            return true;
+        else
+            return false;
+    }
+    else if( this->_Modifiers & WSD_MOD_ALL )
+        return true;
+
+    const char *ext = &filename.c_str()[dotpos];
+    bool        cmp = false;
+    size_t      len = filename.size() - dotpos;
+
+    // sprawdź czy rozszerzenie się zgadza, zgodnie z wybraną techniką
+    // albo uwzględnia wielkość liter, albo nie
+    if( this->_Modifiers & WSD_MOD_CASESENSITIVE )
+    {
+        for( size_t x = 0; x < this->_ExtensionList.size(); ++x )
+            if( len == this->_ExtensionList[x].size() && strcmp(ext, this->_ExtensionList[x].c_str()) == 0 )
+            {
+                cmp = true;
+                break;
+            }
+    }
+    else
+    {
+        // w tym przypadku trzeba sprawdzać każdy znak po kolei
+        for( size_t x = 0; x < this->_ExtensionList.size(); ++x )
+            if( len == this->_ExtensionList[x].size() )
+            {
+                cmp = true;
+                for( size_t y = 0; y < len; ++y )
+                    if( this->_ExtensionList[x][y] != tolower(ext[y]) )
+                    {
+                        cmp = false;
+                        break;
+                    }
+                if( !cmp )
+                    break;
+            }
+    }
+
+    // zaneguj, gdy pliki z podanym rozszerzeniem są pomijane
+    return this->_Modifiers & WSD_MOD_EXCLUDE
+        ? !cmp
+        : cmp;
 }

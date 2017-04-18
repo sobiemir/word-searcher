@@ -41,7 +41,13 @@ private:
     string _Phrase;
     string _Filter;
 
+    vector<string> _ExtensionList;
+
+    int _Modifiers;
+
     void Trim( string &str );
+    void ParseExtensions( string ext );
+    bool CheckExtension( string filename );
 
 public:
     vector<string> FoundFiles;

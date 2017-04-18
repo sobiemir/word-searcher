@@ -23,7 +23,7 @@ Interface::Interface( void )
 {
     this->Folder = TextBox( "Folder : ", "./", 0 );
     this->Phrase = TextBox( "Fraza  : ", ""  , 0 );
-    // this->Filter = TextBox( "Filtr  : ", "*" , 0 );
+    this->Filter = TextBox( "Filtr  : ", "*" , 0 );
     
     this->MainWindow = this->SearchWindow =
     this->HelpWindow = this->ResultWindow = NULL;
@@ -104,14 +104,14 @@ void Interface::TerminalResize( void )
     this->DestroyWindows();
 
     resultw = COLS - 2;
-    resulth = LINES - 7;
+    resulth = LINES - 8;
 
     // utwórz nowe okna
     if( !(this->MainWindow = newwin(LINES, COLS, 0, 0)) )
         exit( EXIT_FAILURE );
-    if( !(this->SearchWindow = newwin(1, resultw, 4, 1)) )
+    if( !(this->SearchWindow = newwin(1, resultw, 5, 1)) )
         exit( EXIT_FAILURE );
-    if( !(this->ResultWindow = newwin(resulth, resultw, 6, 1)) )
+    if( !(this->ResultWindow = newwin(resulth, resultw, 7, 1)) )
         exit( EXIT_FAILURE );
 
     keypad( this->MainWindow, TRUE );
@@ -139,17 +139,17 @@ void Interface::TerminalResize( void )
         ACS_ULCORNER, ACS_URCORNER,
         ACS_LLCORNER, ACS_LRCORNER
     );
-    mvwprintw( this->MainWindow, 0, COLS - 23, " WordSearcher v0.2.0 " );
+    mvwprintw( this->MainWindow, 0, COLS - 23, " WordSearcher v0.2.1 " );
     wattroff( this->MainWindow, this->TextStyle[1] );
 
     // wyświetl pola tekstowe
     this->Folder.Print();
     this->Phrase.Print();
-    // this->Filter.Print();
+    this->Filter.Print();
 
     // linie oddzielające aktualnie przeszukiwany folder i listę znalezionych plików
-    mvwhline( this->MainWindow, 3, 1, ACS_HLINE, COLS - 2 );
-    mvwhline( this->MainWindow, 5, 1, ACS_HLINE, COLS - 2 );
+    mvwhline( this->MainWindow, 4, 1, ACS_HLINE, COLS - 2 );
+    mvwhline( this->MainWindow, 6, 1, ACS_HLINE, COLS - 2 );
 
     // położenie paneli
     this->ResultPanel.SetWindow( this->ResultWindow );

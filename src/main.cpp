@@ -59,6 +59,9 @@ int main( int argc, char *argv[] )
             case 17: // ^Q
                 ws.ResultPanel.Focus();
             break;
+            case 19: // ^S
+                ws.Filter.Focus();
+            break;
             case 18: // ^R
             {
                 searcher.Criteria( ws.Folder.GetContent(), ws.Phrase.GetContent(), ws.Filter.GetContent() );
