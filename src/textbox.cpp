@@ -25,6 +25,25 @@ TextBox::TextBox( string label, string content, size_t size )
 
 // =====================================================================================================================
 
+TextBox &TextBox::operator = ( const TextBox &copy )
+{
+    this->_Label         = copy._Label;
+    this->_LabelStyle    = copy._LabelStyle;
+    this->_Content       = copy._Content;
+    this->_ContentStyle  = copy._ContentStyle;
+    this->_TypeStart     = copy._TypeStart;
+    this->_Size          = copy._Size;
+    this->_Position      = copy._Position;
+    this->_Window        = copy._Window;
+    this->_Shift         = copy._Shift;
+    this->_Letters       = copy._Letters;
+    this->_CaretPosition = copy._CaretPosition;
+
+    return *this;
+}
+
+// =====================================================================================================================
+
 void TextBox::SetPosition( int x, int y )
 {
     this->_Position.X = x;

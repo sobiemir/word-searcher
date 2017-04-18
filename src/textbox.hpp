@@ -1,5 +1,5 @@
-#ifndef __WSH_PROMPT__
-#define __WSH_PROMPT__
+#ifndef __WSH_TEXTBOX__
+#define __WSH_TEXTBOX__
 
 #include <ncurses.h>
 #include <vector>
@@ -34,6 +34,7 @@ private:
 
 public:
     TextBox( string label = "", string content = "", size_t size = 0 );
+    TextBox &operator = ( const TextBox &copy );
 
     void SetPosition( int x, int y );
     void SetPosition( Vector2I vec );
