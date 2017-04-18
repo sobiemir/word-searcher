@@ -33,45 +33,37 @@ int main( int argc, char *argv[] )
     raw();
     nonl();
     noecho();
-    keypad( stdscr, FALSE );
+    keypad( stdscr, TRUE );
 
     Interface ws;
     Searcher  searcher;
 
     searcher.Printer = &ws;
-    // ws.ResultPanel.SetTextSource( &searcher.FoundFiles );
+    ws.ResultPanel.SetTextSource( &searcher.FoundFiles );
 
     ws.InitColors();
     ws.TerminalResize();
 
     int chr;
 
-    while( (chr = wgetch(ws.MainWindow)) != 3 ) /* chr != ^C */
+    while( (chr = wgetch(ws.MainWindow)) != 3 ) // ^C
     {
         switch( chr )
         {
-            case 4: /* chr != ^D */
+            case 4: // ^D
                 ws.Folder.Focus();
             break;
-            case 6: /* chr != ^F */
+            case 6: // ^F
                 ws.Phrase.Focus();
             break;
-            case 17: /* chr != ^Q */
-                // ws.ResultPanel.Focus();
+            case 17: // ^Q
+                ws.ResultPanel.Focus();
             break;
-            case 23: /* chr != ^W */
-            break;
-            case 18:
+            case 18: // ^R
             {
-                // wprintw( ws.MainWindow, "START\n" );
-                // wrefresh( ws.MainWindow );
                 searcher.Criteria( ws.Folder.GetContent(), ws.Phrase.GetContent(), ws.Filter.GetContent() );
                 searcher.Run();
-                // wprintw( ws.MainWindow, "STOP - %d\n", searcher.FoundFiles.size() );
-                // wrefresh( ws.MainWindow );
             }
-            break;
-            case 10: case 13: /* RETURN */
             break;
 #       ifdef KEY_RESIZE
             case KEY_RESIZE:

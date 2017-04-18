@@ -21,7 +21,7 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include "textbox.hpp"
-// #include "panel.hpp"
+#include "panel.hpp"
 
 class Interface
 {
@@ -38,14 +38,15 @@ public:
     TextBox Phrase;
     TextBox Filter;
 
-    // Panel SearchPanel;
-    // Panel ResultPanel;
+    Panel SearchPanel;
+    Panel ResultPanel;
 
     int TextStyle[4];
 
     Interface( void );
     ~Interface( void );
 
+    void RefreshCurrentFile( string *file );
     void RefreshPrintedFiles( void );
 
     void InitColors( void );

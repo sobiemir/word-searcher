@@ -81,6 +81,8 @@ void Searcher::Run( void )
                     shortfname.erase( 0, this->_Folder.size() );
                     filenums++;
 
+                    this->Printer->RefreshCurrentFile( &shortfname );
+
                     // szukaj frazy
                     while( getline(filestream, textline, '\n') )
                     {

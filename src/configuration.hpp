@@ -13,13 +13,11 @@ template <typename T> struct Vector2
     union
     {
         T X;
-        T Cols;
         T Width;
     };
     union
     {
         T Y;
-        T Rows;
         T Height;
     };
 };
