@@ -1,3 +1,5 @@
 wordsearcher
 .vscode/*
 a.out
+panel.cpp
+panel.hpp

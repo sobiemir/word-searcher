@@ -22,37 +22,30 @@
 #include <vector>
 #include <string>
 
-//#define WSD_USE_WCHAR
+#include "configuration.hpp"
 
 using namespace std;
-
-struct Vector2I
-{
-    int X;
-    int Y;
-};
 
 class TextBox
 {
 private:
-    string   _Label;            // zawartość napisu
-    int      _LabelStyle;       // styl wyświetlania napisu
-    string   _Content;          // zawartość pola
-    int      _ContentStyle;     // styl wyświetlania zawartości pola
-    size_t   _TypeStart;        // indeks od którego rozpoczynać się będzie wprowadzanie tekstu
-    size_t   _Size;             // rozmiar pola tekstowego
-    Vector2I _Position;         // pozycja pola wraz z napisem
-    WINDOW  *_Window;           // okno w którym pole tekstowe będzie wyświetlane
-    size_t   _Shift;            // przesunięcie wyświetlanej treści w elementach względem początku
-    size_t   _Letters;          // ilość liter wyświetlana w polu tekstowym
-    size_t   _CaretPosition;    // pozycja kursora
+    string       _Label;            // zawartość napisu
+    int          _LabelStyle;       // styl wyświetlania napisu
+    string       _Content;          // zawartość pola
+    int          _ContentStyle;     // styl wyświetlania zawartości pola
+    size_t       _TypeStart;        // indeks od którego rozpoczynać się będzie wprowadzanie tekstu
+    size_t       _Size;             // rozmiar pola tekstowego
+    Vector2<int> _Position;         // pozycja pola wraz z napisem
+    WINDOW      *_Window;           // okno w którym pole tekstowe będzie wyświetlane
+    size_t       _Shift;            // przesunięcie wyświetlanej treści w elementach względem początku
+    size_t       _Letters;          // ilość liter wyświetlana w polu tekstowym
+    size_t       _CaretPosition;    // pozycja kursora
 
 public:
     TextBox( string label = "", string content = "", size_t size = 0 );
     TextBox &operator = ( const TextBox &copy );
 
     void SetPosition( int x, int y );
-    void SetPosition( Vector2I vec );
     void SetWindow( WINDOW *window );
     void SetSize( size_t size );
     void SetStyle( int label, int text );

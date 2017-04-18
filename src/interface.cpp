@@ -28,6 +28,20 @@ Interface::Interface( void )
 
     this->TextStyle[0] = this->TextStyle[1] =
     this->TextStyle[2] = this->TextStyle[3] = 0;
+
+    // this->FoundPosition = 4;
+}
+
+Interface::~Interface( void )
+{
+    this->DestroyWindows();
+}
+
+void Interface::RefreshPrintedFiles( void )
+{
+    // mvwprintw( this->MainWindow, this->FoundPosition++, 1, file.c_str() );
+    // this->ResultPanel.RefreshSource();
+    // this->ResultPanel.PrintText();
 }
 
 void Interface::InitColors( void )
@@ -67,12 +81,21 @@ void Interface::InitColors( void )
 
 void Interface::TerminalResize( void )
 {
+    int resultw,
+        resulth;
+
     this->DestroyWindows();
+
+    resultw = COLS - 2;
+    resulth = (LINES - 4) / 2 - 2;
 
     if( !(this->MainWindow = newwin(LINES, COLS, 0, 0)) )
         exit( EXIT_FAILURE );
+    if( !(this->ResultWindow = newwin(resulth, resultw, 4, 1)) )
+        exit( EXIT_FAILURE );
 
     keypad( this->MainWindow, TRUE );
+    keypad( this->ResultWindow, TRUE );
 
     this->Folder.SetSize( COLS - 2 );
     this->Folder.SetWindow( this->MainWindow );
@@ -95,7 +118,7 @@ void Interface::TerminalResize( void )
         ACS_LLCORNER, ACS_LRCORNER
     );
 
-    mvwprintw( this->MainWindow, 0, COLS - 23, " Interface v0.2.0 " );
+    mvwprintw( this->MainWindow, 0, COLS - 23, " WordSearcher v0.2.0 " );
     wattroff( this->MainWindow, this->TextStyle[1] );
 
     this->Folder.Print();
@@ -103,13 +126,19 @@ void Interface::TerminalResize( void )
     // this->Filter.Print();
 
     mvwhline( this->MainWindow, 3, 1, ACS_HLINE, COLS - 2 );
-    mvwhline( this->MainWindow, (LINES - 3) / 2 + 2, 1, ACS_HLINE, COLS - 2 );
+    mvwhline( this->MainWindow, 4 + resulth, 1, ACS_HLINE, COLS - 2 );
 
     wattron( this->MainWindow, this->TextStyle[2] );
-    mvwprintw( this->MainWindow, ((LINES - 3) / 2) / 2 + 3, COLS / 2 - 9, " [^H] Okno pomocy " );
     wattroff( this->MainWindow, this->TextStyle[2] );
 
+    // this->ResultPanel.SetWindow( this->ResultWindow );
+    // this->ResultPanel.SetDimension( COLS - 2, (LINES - 4) / 2 );
+    // this->ResultPanel.SetPosition( 0, 0 );
+
+    mvwprintw( this->ResultWindow, resulth / 2, resultw / 2 - 9, " [^H] Okno pomocy " );
+
     wrefresh( this->MainWindow );
+    wrefresh( this->ResultWindow );
 }
 
 void Interface::DestroyWindows( void )

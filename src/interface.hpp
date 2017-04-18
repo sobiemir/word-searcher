@@ -21,9 +21,13 @@
 #include <ncurses.h>
 #include <stdlib.h>
 #include "textbox.hpp"
+// #include "panel.hpp"
 
 class Interface
 {
+private:
+    // size_t FoundPosition;
+
 public:
     WINDOW *MainWindow;
     WINDOW *SearchWindow;
@@ -34,9 +38,15 @@ public:
     TextBox Phrase;
     TextBox Filter;
 
+    // Panel SearchPanel;
+    // Panel ResultPanel;
+
     int TextStyle[4];
 
     Interface( void );
+    ~Interface( void );
+
+    void RefreshPrintedFiles( void );
 
     void InitColors( void );
     void TerminalResize( void );

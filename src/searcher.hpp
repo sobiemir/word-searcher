@@ -20,18 +20,42 @@
 
 #include <vector>
 #include <string>
+#include <cstring>
+#include <fstream>
+
+#include "interface.hpp"
+#include "configuration.hpp"
+
+#ifdef MSD_SYSTEM_WINDOWS
+#   include "dirent.h"
+#else
+#   include <dirent.h>
+#endif
 
 using namespace std;
 
 class Searcher
 {
 private:
-    
+    string _Folder;
+    string _Phrase;
+    string _Filter;
+
+    void Trim( string &str );
 
 public:
+    vector<string> FoundFiles;
+    Interface *Printer;
+
     Searcher( string folder = "./", string phrase = "", string filter = "*" );
 
     void Run( void );
+
+    void Criteria( string folder = "./", string phrase = "", string filter = "*" );
+
+    string GetFolder( void );
+    string GetPhrase( void );
+    string GetFilter( void );
 };
 
 #endif
