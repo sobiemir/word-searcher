@@ -26,7 +26,7 @@
 #include "interface.hpp"
 #include "configuration.hpp"
 
-#ifdef MSD_SYSTEM_WINDOWS
+#ifdef WSD_SYSTEM_WINDOWS
 #   include "dirent.h"
 #else
 #   include <dirent.h>

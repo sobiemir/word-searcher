@@ -18,11 +18,16 @@
 #ifndef __WSH_PANEL__
 #define __WSH_PANEL__
 
-#include <ncurses.h>
 #include <string>
 #include <vector>
 
 #include "configuration.hpp"
+
+#ifdef WSD_SYSTEM_WINDOWS
+#   include "curses.h"
+#else
+#   include <ncurses.h>
+#endif
 
 using namespace std;
 

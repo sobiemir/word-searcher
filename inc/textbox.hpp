@@ -18,11 +18,16 @@
 #ifndef __WSH_TEXTBOX__
 #define __WSH_TEXTBOX__
 
-#include <ncurses.h>
 #include <vector>
 #include <string>
 
 #include "configuration.hpp"
+
+#ifdef WSD_SYSTEM_WINDOWS
+#   include "curses.h"
+#else
+#   include <ncurses.h>
+#endif
 
 using namespace std;
 

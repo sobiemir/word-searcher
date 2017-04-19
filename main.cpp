@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  WordSearcher
  *  Copyright (C) 2013-2017 sobiemir <sobiemir@aculo.pl>
  * 
@@ -15,13 +15,18 @@
  *  along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <ncurses.h>
-#include <panel.h>
 #include <cstdlib>
 #include <string>
 
-#include "interface.hpp"
-#include "searcher.hpp"
+#include "./inc/configuration.hpp"
+#include "./inc/interface.hpp"
+#include "./inc/searcher.hpp"
+
+#ifdef WSD_SYSTEM_WINDOWS
+#   include "./inc/curses.h"
+#else
+#   include <ncurses.h>
+#endif
 
 using namespace std;
 
