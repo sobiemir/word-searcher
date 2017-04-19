@@ -34,6 +34,40 @@
 
 using namespace std;
 
+/**
+ * Klasa wyszukiwarki frazy.
+ * Udostępnia funkcje, pozwalające na wyszukiwanie frazy w plikach.
+ * Domyślnie wyszukiwarka nie zwraca uwagi na wielkość liter w rozszerzeniach, oraz wyszukiwanie odbywa się
+ * przyrostowo, a więc każdy napotkany folder dodatkowo jest przeszukiwany.
+ * Pliki można filtrować poprzez nazwy rozszerzeń.
+ *
+ * Składnia filtru:
+ * [modyfikatory]/[rozszerzenie1]/[rozszerzenie2]/...
+ *
+ * Gdzie dostępne modyfikatory filtrów to:
+ * > ! : wyszukiwanie z uwzględnieniem wielkości znaków w rozszerzeniu
+ * > @ : dołączanie do wyszukiwania plików bez rozszerzenia
+ * > * : wyszukiwanie we wszystkich znalezionych plikach
+ * > + : wyszukiwanie w plikach zawierających podane rozszerzenia
+ * > - : wyszukiwanie w plikach, które nie zawierają podanych rozszerzeń
+ * > = : przeszukiwanie tylko podanego folderu, bez podfolderów
+ *
+ * Szczególne przypadki modyfikatorów bez listy rozszerzeń:
+ * > @   : wyszukuje tylko w plikach bez rozszerzeń
+ * > *@  : wyszukuje tylko w plikach, które mają jakiekolwiek rozszerzenie
+ * > -   : wolniejszy odpowiednik *@
+ * > *=  : przeszukuje wszystkie plików tylko w podanym folderze
+ * > *=@ : przeszukuje wszystkie pliki z jakimkolwiek rozszerzeniem w podanym folderze
+ * > @=  : przeszukuje wszystkie pliki bez rozszerzenia w podanym folderze
+ *
+ * Przykłady filtrów:
+ *   *@
+ *   !+/html/css
+ *   -/jpg/png
+ *   /php/js/ts
+ *   !@-/cpp/hpp
+ *   @=+/c/h
+ */
 class Searcher
 {
 private:
@@ -91,17 +125,73 @@ private:
     bool CheckExtension( string filename );
 
 public:
+
+// =====================================================================================================================
+
+    /**
+     * Lista plików, które spełniają kryteria wyszukiwania.
+     * Lista ta wykorzystywana jest do wyświetlania w panelu.
+     */
     vector<string> FoundFiles;
+    /**
+     * Klasa zawierająca funkcje pozwalające na wyświetlanie danych.
+     * Zmienna używana przy raportowaniu przeszukiwanego pliku lub do wyświetlania listy plików.
+     * Można do niej przypisać tylko klasę interfejsu.
+     */
     Interface *Printer;
 
+// =====================================================================================================================
+
+    /**
+     * Konstruktor klasy Searcher.
+     * Pozwala na przypisanie domyślnych wartości zmiennym w klasie.
+     * Wywołuje funkcję Searcher::Criteria.
+     * 
+     * @param folder Nazwa folderu, który program będzie przeszukiwał.
+     * @param phrase Fraza wyszukiwana w plikach.
+     * @param filter Filtr stosowany na rozszerzeniach plików.
+     */
     Searcher( string folder = "./", string phrase = "", string filter = "*" );
 
+    /**
+     * Uruchamia wyszukiwarkę.
+     * Funkcja otwiera foldery w poszukiwaniu plików, w których testowana jest podana fraza.
+     * Gdy fraza zostaje znaleziona, raportowana jest do klasy Interface przypisanej do zmiennej Printer.
+     * Dzięki temu wyniki wyszukiwania pojawiają się od razu po znalezieniu konkretnego elementu,
+     * więc nie trzeba czekać na zakończenie wyszukiwania.
+     */
     void Run( void );
 
+    /**
+     * Zmienia kryteria wyszukiwania.
+     * Funkcja pozwala na zmianę kryteriów wyszukiwania przypisanych w konstruktorze.
+     * Należy ją wywołać przed uruchomieniem funkcji Searcher::Run.
+     * 
+     * @param folder Nazwa folderu, który program będzie przeszukiwał.
+     * @param phrase Fraza wyszukiwana w plikach.
+     * @param filter Filtr stosowany na rozszerzeniach plików.
+     */
     void Criteria( string folder = "./", string phrase = "", string filter = "*" );
 
+    /**
+     * Pobiera nazwę folderu przekazanego do kryterium wyszukiwania.
+     *
+     * @return Nazwa folderu.
+     */
     string GetFolder( void );
+
+    /**
+     * Pobiera nazwę frazy przekazanej do kryterium wyszukiwania.
+     *
+     * @return Nazwa frazy.
+     */
     string GetPhrase( void );
+
+    /**
+     * Pobiera nazwę filtru przekazanego do kryterium wyszukiwania.
+     *
+     * @return Nazwa filtru.
+     */
     string GetFilter( void );
 };
 

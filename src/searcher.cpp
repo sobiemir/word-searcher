@@ -92,6 +92,10 @@ void Searcher::Run( void )
                 // sprawdź czy znaleziony plik jest folderem
                 if( direntry->d_type == DT_DIR )
                 {
+                    // jeżeli jest to wyszukiwanie bez podfolderów, pomiń...
+                    if( this->_Modifiers & WSD_MOD_NOINCREMENTAL )
+                        continue;
+
                     if( strcmp(direntry->d_name, ".") && strcmp(direntry->d_name, "..") )
                         dirlist.push_back( currdir + direntry->d_name + "/" ),
                         dirnums++;
@@ -211,6 +215,7 @@ void Searcher::ParseExtensions( string ext )
             case '-': this->_Modifiers |= WSD_MOD_EXCLUDE; break;
             case '!': this->_Modifiers |= WSD_MOD_CASESENSITIVE; break;
             case '@': this->_Modifiers |= WSD_MOD_NOEXT; break;
+            case '=': this->_Modifiers |= WSD_MOD_NOINCREMENTAL; break;
         }
 
     // zamień na małe litery w przypadku gdy wyszukiwanie nie uwzględnia wielkości znaków

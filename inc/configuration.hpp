@@ -29,10 +29,11 @@
  * Definicje wartości modyfikatorów dla filtrów.
  * Pozwalają na szybkie rozpoznanie z jakim modyfikatorem funkcja ma do czynienia.
  */
-#define WSD_MOD_ALL           0x1   // Wszystkie znalezione pliki.
-#define WSD_MOD_CASESENSITIVE 0x2   // Sprawdzanie rozszerzeń z uwzględnieniem wielkości znaków.
-#define WSD_MOD_EXCLUDE       0x4   // Pliki z każdym rozszerzeniem oprócz uwzględnionych w liście.
-#define WSD_MOD_NOEXT         0x8   // Wyszukiwanie razem z plikami bez rozszerzeń.
+#define WSD_MOD_ALL           0x01  // Wszystkie znalezione pliki.
+#define WSD_MOD_CASESENSITIVE 0x02  // Sprawdzanie rozszerzeń z uwzględnieniem wielkości znaków.
+#define WSD_MOD_EXCLUDE       0x04  // Pliki z każdym rozszerzeniem oprócz uwzględnionych w liście.
+#define WSD_MOD_NOEXT         0x08  // Wyszukiwanie razem z plikami bez rozszerzeń.
+#define WSD_MOD_NOINCREMENTAL 0x10  // Wyszukiwanie tylko w podanym folderze - domyślnie jest przyrostowe.
 
 /**
  * Struktura zmiennej składającej się z dwóch elementów.
