@@ -21,11 +21,8 @@
 
 Searcher::Searcher( string folder, string phrase, string filter )
 {
-    this->_Folder = folder;
-    this->_Phrase = phrase;
-    this->_Filter = filter;
-
     this->Printer = NULL;
+    this->Criteria( folder, phrase, filter );
 }
 
 // =====================================================================================================================
@@ -36,7 +33,27 @@ void Searcher::Criteria( string folder, string phrase, string filter )
     this->_Phrase = phrase;
     this->_Filter = filter;
 
-    this->ParseExtensions( filter );
+    this->Trim( this->_Filter );
+    this->Trim( this->_Folder );
+
+    if( this->_Folder.empty() )
+        this->_Folder = "./";
+    if( this->_Filter.empty() )
+        this->_Filter = "*";
+
+    this->ParseExtensions( this->_Filter );
+
+    char chr = this->_Folder[this->_Folder.size() - 1];
+
+#ifdef WSD_SYSTEM_WINDOWS
+    // windows lewy ukośnik traktuje tak samo jak prawy ukośnik, a więc separator pomiędzy folderami
+    if( chr != '\\' && chr != '/' )
+        this->_Folder += "/";
+#else
+    // w przypadku systemu linuks, nazwa pliku może zawierać lewy ukośnik, więc separatorem jest tylko prawy
+    if( chr != '/' )
+        this->_Folder += "/";
+#endif
 }
 
 // =====================================================================================================================
@@ -53,9 +70,6 @@ void Searcher::Run( void )
 
     // wyczyść listę plików przed wyszukiwaniem
     this->FoundFiles.clear();
-
-    // wyczyść nazwę folderu ze zbędnych spacji
-    this->Trim( this->_Folder );
 
     // dodaj folder do listy
     dirlist.push_back( this->_Folder );

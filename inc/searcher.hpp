@@ -37,16 +37,57 @@ using namespace std;
 class Searcher
 {
 private:
+    /**
+     * Nazwa folderu.
+     * W tym folderze program rozpocznie wyszukiwanie plików.
+     */
     string _Folder;
+    /**
+     * Fraza do znalezienia.
+     * W przypadku pustej frazy wypisuje wszystkie pliki.
+     */
     string _Phrase;
+    /**
+     * Filtr stosowany na nazwach plików.
+     * W przypadku gdy plik nie spełnia oczekiwań filtru, zostaje on odrzucony.
+     * W ten sposób można przyspieszyć wyszukiwanie w przypadku dużych ilości plików.
+     */
     string _Filter;
-
+    /**
+     * Wyodrębniona z filtru lista rozszerzeń.
+     * Na jej podstawie program odrzuca pliki do wyszukiwania. 
+     */
     vector<string> _ExtensionList;
-
+    /**
+     * Modyfikatory dla filtru.
+     * Dzięki nim, filtr wie co ma zrobić z danym plikiem w szczególnych przypadkach.
+     */
     int _Modifiers;
 
+// =====================================================================================================================
+
+    /**
+     * Czyści prawą i lewą stronę łańcucha z białych znaków.
+     * Dzięki temu ciąg końcowy wygląda tak jak powinien wyglądać.
+     *
+     * @param str Ciąg znaków do obcięcia.
+     */
     void Trim( string &str );
+
+    /**
+     * Przetwarza filtr podany przez użytkownika.
+     * Wyodrębnia z niego listę rozszerzeń i modyfikatory.
+     * 
+     * @param ext 
+     */
     void ParseExtensions( string ext );
+
+    /**
+     * Sprawdza, czy rozszerzenie pliku spełnia oczekiwania filtra.
+     * Dodatkowo bierze pod uwagę przekazane do filtra modyfikatory.
+     *
+     * @param filename Nazwa pliku do sprawdzenia.
+     */
     bool CheckExtension( string filename );
 
 public:
