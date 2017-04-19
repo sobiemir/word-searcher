@@ -20,14 +20,18 @@ Gdzie modyfikatorami są:
   * `*` : Wyszukiwanie we wszystkich plikach - domyślne gdy filtr jest pusty.
   * `+` : Przeszukiwanie w plikach o podanych rozszerzeniach - parametr domyślny.
   * `-` : Przeszukiwanie w plikach o rozszerzeniach innych niż podane.
+  * `=` : Przeszukiwanie tylko w podanym katalogu, bez podkatalogów.
 
 Modyfikatory można łączyć oraz podawać bez listy rozszerzeń.
 Przypadki podawania modyfikatorów bez listy rozszerzeń:
 
-  * `@` : Wyszukiwanie tylko w plikach bez rozszerzeń.
-  * `*@` : Wyszukiwanie w plikach posiadających rozszerzenia.
-  * `-` : Wolniejszy odpowiednik pozycji `*@`.
-  
+  * `@  ` : Wyszukiwanie tylko w plikach bez rozszerzeń.
+  * `*@ ` : Wyszukiwanie w plikach posiadających rozszerzenia.
+  * `-  ` : Wolniejszy odpowiednik pozycji `*@`.
+  * `*= ` : Wyszukiwanie we wszystkich plikach, ale tylko w podanym folderze.
+  * `*=@` : Wyszukiwanie we wszystkich plikach o dowolnym rozszerzeniu w podanym folderze.
+  * `@= ` : Wyszukiwanie tylko w plikach bez rozszerzenia w podanym folderze.
+
 Przykłady poprawnych filtrów:
 
     *@
@@ -35,6 +39,7 @@ Przykłady poprawnych filtrów:
     -/jpg/png
     /php/js/ts
     !@-/cpp/hpp
+    =+/c/h
 
 ### Wygląd
 

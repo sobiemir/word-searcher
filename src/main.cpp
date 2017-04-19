@@ -22,10 +22,11 @@
 #   define MSD_SYSTEM_LINUX
 #endif
 
-#define WSD_MOD_ALL           0x1
-#define WSD_MOD_CASESENSITIVE 0x2
-#define WSD_MOD_EXCLUDE       0x4
-#define WSD_MOD_NOEXT         0x8
+#define WSD_MOD_ALL           0x01
+#define WSD_MOD_CASESENSITIVE 0x02
+#define WSD_MOD_EXCLUDE       0x04
+#define WSD_MOD_NOEXT         0x08
+#define WSD_MOD_NOINCREMENTAL 0x10
 
 #include <string>
 #include <iostream>
@@ -94,11 +95,15 @@ int trim_charstr( char *data, size_t len )
  * > - : tylko pliki o rozszerzeniach innych niż podane są przesukiwane
  * > * : przeszukiwane są wszystkie rozszerzenia
  * > @ : uwzględnij w filtrze również pliki bez rozszerzeń
+ * > = : przeszukiwanie tylko podanego folderu, bez podfolderów
  *
  * Szczególne przypadki podawania modyfikatorów bez rozszerzeń
- * > @  : bez podawania rozszerzeń - szuka tylko w plikach bez rozszerzeń
- * > *@ : szuka tylko w plikach z rozszerzeniami
- * > -  : bez podawania rozszerzeń - szuka tylko w plikach z rozszerzeniami, wolniejsza wersja *@
+ * > @   : bez podawania rozszerzeń - szuka tylko w plikach bez rozszerzeń
+ * > *@  : szuka tylko w plikach z rozszerzeniami
+ * > -   : bez podawania rozszerzeń - szuka tylko w plikach z rozszerzeniami, wolniejsza wersja *@
+ * > *=  : przeszukuje wszystkie plików tylko w podanym folderze
+ * > *=@ : przeszukuje wszystkie pliki z jakimkolwiek rozszerzeniem w podanym folderze
+ * > @=  : przeszukuje wszystkie pliki bez rozszerzenia w podanym folderze
  *
  * @param  str    Ciąg znaków zawierający rozszerzenia.
  * @param  extvec Lista rozszerzeń wyciągniętych z ciągu.
@@ -132,10 +137,11 @@ int parse_extensions( char *str, vector<string> &extvec )
         switch( extstr[x] )
         {
             case '/': x = -2; break;
-            case '*': modifier |= WSD_MOD_ALL; break;
-            case '-': modifier |= WSD_MOD_EXCLUDE; break;
+            case '*': modifier |= WSD_MOD_ALL;           break;
+            case '-': modifier |= WSD_MOD_EXCLUDE;       break;
             case '!': modifier |= WSD_MOD_CASESENSITIVE; break;
-            case '@': modifier |= WSD_MOD_NOEXT; break;
+            case '@': modifier |= WSD_MOD_NOEXT;         break;
+            case '=': modifier |= WSD_MOD_NOINCREMENTAL; break;
         }
 
     // zamień na małe litery w przypadku gdy wyszukiwanie nie uwzględnia wielkości znaków
@@ -281,9 +287,16 @@ int main( void )
                 folderLen = 2;
 
             // dodaj ukośnik gdy go brakuje
+#       ifdef MSD_SYSTEM_WINDOWS
             if( folderLen > 1 && folder[folderLen-1] != '/' && folder[folderLen-1] != '\\' && folderLen < 2047 )
                 folder[folderLen] = '/',
                 folder[++folderLen] = '\0';
+#       else
+            // jako że linux w nazwie folderu lub pliku może zawierać lewy ukośnik, nie uwzględniaj go
+            if( folderLen > 1 && folder[folderLen-1] != '/' && folderLen < 2047 )
+                folder[folderLen] = '/',
+                folder[++folderLen] = '\0';
+#       endif
         }
         // szukana fraza
         if( !saveLastWord )
@@ -334,6 +347,10 @@ int main( void )
                     // sprawdź czy znaleziony plik jest folderem
                     if( dirEntry->d_type == DT_DIR )
                     {
+                        // jeżeli ma wyszukiwać bez podfolderów, pomiń
+                        if( extModifiers & WSD_MOD_NOINCREMENTAL )
+                            continue;
+
                         if( strcmp(dirEntry->d_name, ".") && strcmp(dirEntry->d_name, "..") )
                             foundFolders.push_back( currFolder + dirEntry->d_name + "/" ),
                             folderNums++;
