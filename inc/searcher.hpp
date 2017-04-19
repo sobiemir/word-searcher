@@ -139,6 +139,39 @@ public:
      * Można do niej przypisać tylko klasę interfejsu.
      */
     Interface *Printer;
+    /**
+     * Informacja o tym, czy funkcja aktualnie zajmuje się wyszukiwaniem frazy.
+     * Przydatne w komunikacji między wątkami, dzięki temu w prosty sposób można przerwać wyszukiwanie.
+     */
+    bool Searching;
+
+#ifdef WSD_SYSTEM_WINDOWS
+    /**
+     * Sekcja krytyczna.
+     * Używana przy zmiennej warunkowej dla wątku.
+     * Wersja dla systemu Windows.
+     */
+    CRITICAL_SECTION   Mutex;
+    /**
+     * Zmienna warunkowa.
+     * Odpowiada za przekazanie informacji o zmianie statusu zmiennej z poziomu wątku.
+     * Wersja dla systemu Windows.
+     */
+    CONDITION_VARIABLE Condition;
+#else
+    /**
+     * Sekcja krytyczna.
+     * Używana przy zmiennej warunkowej dla wątku.
+     * Wersja standardu POSIX.
+     */
+    pthread_mutex_t Mutex;
+    /**
+     * Zmienna warunkowa.
+     * Odpowiada za przekazanie informacji o zmianie statusu zmiennej z poziomu wątku.
+     * Wersja standardu POSIX.
+     */
+    pthread_cond_t  Condition;
+#endif
 
 // =====================================================================================================================
 

@@ -30,6 +30,8 @@ Interface::Interface( void )
 
     this->TextStyle[0] = this->TextStyle[1] =
     this->TextStyle[2] = this->TextStyle[3] = 0;
+
+    this->Searching = false;
 }
 
 // =====================================================================================================================
@@ -139,7 +141,7 @@ void Interface::TerminalResize( void )
         ACS_ULCORNER, ACS_URCORNER,
         ACS_LLCORNER, ACS_LRCORNER
     );
-    mvwprintw( this->MainWindow, 0, COLS - 23, " WordSearcher v0.2.1 " );
+    mvwprintw( this->MainWindow, 0, COLS - 23, " WordSearcher v0.2.2 " );
     wattroff( this->MainWindow, this->TextStyle[1] );
 
     // wyświetl pola tekstowe

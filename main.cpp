@@ -26,12 +26,58 @@
 #   include "./inc/curses.h"
 #else
 #   include <ncurses.h>
+#   include <pthread.h>
+#   include <signal.h>
+#   include <errno.h>
 #endif
 
 using namespace std;
 
+#ifdef WSD_SYSTEM_WINDOWS
+    /**
+     * Funkcja wywoływana w osobnym wątku.
+     * Odpowiada za wyszukiwanie frazy w plikach.
+     * Wersja dla systemu Windows.
+     * 
+     * @param ptr Wskaźnik do klasy wyszukiwarki.
+     * @return Kod błędu.
+     */
+    DWORD WINAPI non_blocking_search( void *ptr )
+    {
+        Searcher *searcher = static_cast<Searcher*>(ptr);
+        searcher->Run();
+
+        return 0;
+    }
+#else
+    /**
+     * Funkcja wywoływana w osobnym wątku.
+     * Odpowiada za wyszukiwanie frazy w plikach.
+     * Wersja dla systemu Linux i standardu POSIX.
+     * 
+     * @param ptr Wskaźnik do klasy wyszukiwarki.
+     * @return Status wyjścia.
+     */
+    void *non_blocking_search( void *ptr )
+    {
+        Searcher *searcher = static_cast<Searcher*>(ptr);
+        searcher->Run();
+
+        return NULL;
+    }
+#endif
+
+/**
+ * Funkcja główna aplikacji.
+ * 
+ * @param argc Ilość argumentów przekazywanych do programu.
+ * @param argv Argumenty przekazywane do programu.
+ * 
+ * @return Kod błędu.
+ */
 int main( int argc, char *argv[] )
 {
+    // inicjalizacja ncurses
     if( initscr() == NULL )
         return EXIT_FAILURE;
     
@@ -43,16 +89,52 @@ int main( int argc, char *argv[] )
     Interface ws;
     Searcher  searcher;
 
+    // źródło wyświetlanych danych
     searcher.Printer = &ws;
     ws.ResultPanel.SetTextSource( &searcher.FoundFiles );
 
     ws.InitColors();
     ws.TerminalResize();
 
-    int chr;
+    bool run = true;
 
-    while( (chr = wgetch(ws.MainWindow)) != 3 ) // ^C
+#ifdef WSD_SYSTEM_WINDOWS
+    DWORD  threadid = 0;
+    HANDLE searchthread = NULL;
+#else
+    pthread_t searchthread;
+#endif
+
+    while( run )
     {
+    	int chr = wgetch( ws.MainWindow );
+
+#   ifdef WSD_SYSTEM_WINDOWS
+        if( WaitForSingleObject(searchthread, 0) == WAIT_OBJECT_0 )
+            ws.Searching       = false,
+            searcher.Searching = false;
+#   else
+        // nie pozwól, aby błąd w wątku spowodował zawieszenie programu
+        if( ws.Searching && pthread_kill(searchthread, 0) == ESRCH )
+            ws.Searching       = false,
+            searcher.Searching = false;
+#   endif
+
+        // reakcje na specjalne zdarzenia, działające podczas wyszukiwania
+        if( chr == 3 )
+            if( ws.Searching )
+                searcher.Searching = false;
+            else
+                run = false;
+#       ifdef KEY_RESIZE
+        else if( chr == KEY_RESIZE )
+            ws.TerminalResize();
+#       endif
+
+        // jeżeli wyszukiwanie się rozpoczęło, pozostaw akcje pod spodem w spokoju
+        if( ws.Searching )
+            continue;
+
         switch( chr )
         {
             case 4: // ^D
@@ -69,19 +151,66 @@ int main( int argc, char *argv[] )
             break;
             case 18: // ^R
             {
+                // ustaw kryteria wyszukiwania
                 searcher.Criteria( ws.Folder.GetContent(), ws.Phrase.GetContent(), ws.Filter.GetContent() );
-                searcher.Run();
+
+#           ifdef WSD_SYSTEM_WINDOWS
+                BOOL error = FALSE;
+
+                // zamknij uchwyt do poprzedniego wątku
+                if( searchthread )
+                    CloseHandle( searchthread );
+                searchthread = NULL;
+                
+                // próbuj utworzyć wątek, jeżeli się nie uda, trudno
+                if( !(searchthread = CreateThread(NULL, 0, non_blocking_search, &searcher, 0, &threadid)) )
+                    break;
+
+                EnterCriticalSection( &searcher.Mutex );
+                
+                // czekaj maksymalnie 4 sekundy na zamianę statusu
+                while( !error && !ws.Searching )
+                    error = SleepConditionVariableCS( &searcher.Condition, &searcher.Mutex, 4000 );
+                
+                // jeżeli do tej pory odpowiedzi nie było, próbuj go zamknąć
+                if( GetLastError() == ERROR_TIMEOUT )
+                    TerminateThread( searchthread, 0 );
+                
+                LeaveCriticalSection( &searcher.Mutex );
+#           else
+                struct timespec ts;
+                int    ercode = 0;
+
+                // próbuj utworzyć wątek, jeżeli się nie uda, trudno
+                if( pthread_create(&searchthread, NULL, non_blocking_search, &searcher) )
+                    break;
+
+                pthread_mutex_lock( &searcher.Mutex );
+
+                clock_gettime( CLOCK_REALTIME, &ts );
+                ts.tv_sec += 4;
+
+                // czekaj maksymalnie 4 sekundy na zamianę statusu
+                while( ercode == 0 && !ws.Searching )
+                    ercode = pthread_cond_timedwait( &searcher.Condition, &searcher.Mutex, &ts );
+                
+                // jeżeli do tej pory odpowiedzi nie było, próbuj go zamknąć
+                if( ercode == ETIMEDOUT )
+                    pthread_cancel( searchthread );
+
+                pthread_mutex_unlock( &searcher.Mutex );
+#           endif
             }
             break;
-#       ifdef KEY_RESIZE
-            case KEY_RESIZE:
-                ws.TerminalResize();
-            break;
-#       endif
         }
         // wprintw( ws.MainWindow, "%d %c\n", chr, chr );
         // wrefresh( ws.MainWindow );
     }
+
+#ifdef WSD_SYSTEM_WINDOWS
+    if( searchthread )
+        CloseHandle( searchthread );
+#endif
 
     clear();
     refresh();

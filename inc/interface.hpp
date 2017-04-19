@@ -94,6 +94,13 @@ public:
      */
     int TextStyle[4];
 
+    /**
+     * Informacja o uruchomieniu wyszukiwarki.
+     * Gdy klasa odpowiedzialna za wyszukiwanie zostanie uruchomiona, zmienna będzie zawierała wartość TRUE.
+     * Zmienna używana w pętli głównej programu.
+     */
+    bool Searching;
+
 // =====================================================================================================================
 
     /**

@@ -21,7 +21,17 @@
 
 Searcher::Searcher( string folder, string phrase, string filter )
 {
-    this->Printer = NULL;
+    this->Printer   = NULL;
+    this->Searching = false;
+
+#ifdef WSD_SYSTEM_WINDOWS
+    InitializeCriticalSection( &this->Mutex );
+    InitializeConditionVariable( &this->Condition );
+#else
+    this->Mutex     = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
+    this->Condition = (pthread_cond_t)PTHREAD_COND_INITIALIZER;
+#endif
+
     this->Criteria( folder, phrase, filter );
 }
 
@@ -61,12 +71,23 @@ void Searcher::Criteria( string folder, string phrase, string filter )
 void Searcher::Run( void )
 {
     size_t dirnums  = 0,
-           filenums = 0;
+           filenums = 0,
+           foundpos = 0;
 
     vector<string> dirlist;
 
     DIR   *dirptr;
     struct dirent *direntry;
+
+    this->Searching          = true;
+    this->Printer->Searching = true;
+
+#ifdef WSD_SYSTEM_WINDOWS
+    WakeConditionVariable( &this->Condition );
+#else
+    // wyślij sygnał, że wszystko jest w porządku...
+    pthread_cond_signal( &this->Condition );
+#endif
 
     // wyczyść listę plików przed wyszukiwaniem
     this->FoundFiles.clear();
@@ -88,6 +109,10 @@ void Searcher::Run( void )
                 string  filename   = currdir + direntry->d_name,
                         shortfname = currdir + direntry->d_name,
                         textline;
+                
+                // przerwij wyszukiwanie gdy jest to konieczne
+                if( !this->Searching )
+                    break;
 
                 // sprawdź czy znaleziony plik jest folderem
                 if( direntry->d_type == DT_DIR )
@@ -100,14 +125,25 @@ void Searcher::Run( void )
                         dirlist.push_back( currdir + direntry->d_name + "/" ),
                         dirnums++;
                 }
-                else
+                // tylko zwykłe pliki
+                else if( direntry->d_type == DT_REG )
                 {
+                    foundpos = 0;
+
                     // pomijanie plików, które nie spełniają kryteriów
                     if( !this->CheckExtension(filename) )
                         continue;
 
                     // otwórz plik
                     filestream.open( filename.c_str(), std::ios::in );
+
+                    // problem z otwarciem pliku...
+                    if( filestream.fail() )
+                    {
+                        filestream.close();
+                        continue;
+                    }
+
                     shortfname.erase( 0, this->_Folder.size() );
                     filenums++;
 
@@ -115,9 +151,7 @@ void Searcher::Run( void )
 
                     // szukaj frazy
                     while( getline(filestream, textline, '\n') )
-                    {
-                        size_t foundPos = textline.find( this->_Phrase );
-                        if( foundPos != std::string::npos )
+                        if( (foundpos = textline.find(this->_Phrase)) != std::string::npos )
                         {
                             // dodaj do listy znalezionych
                             this->FoundFiles.push_back( shortfname );
@@ -127,8 +161,8 @@ void Searcher::Run( void )
 
                             break;
                         }
-                    }
-                    filestream.close( );
+
+                    filestream.close();
                 }
             }
 
@@ -136,8 +170,17 @@ void Searcher::Run( void )
         closedir( dirptr );
 
         // usuwa pierwszy element
-        dirlist.erase( dirlist.begin() );
+        if( this->Searching )
+            dirlist.erase( dirlist.begin() );
+        else
+        {
+            dirlist.clear();
+            break;
+        }
     }
+
+    // zatrzymaj wyszukiwanie
+    this->Printer->Searching = false;
 }
 
 // =====================================================================================================================
