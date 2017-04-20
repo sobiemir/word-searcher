@@ -5,17 +5,14 @@ ODIR=obj
 LIBS=-lncurses -lpthread
 MKDIR=mkdir -p
 
-DEPS=inc/configuration.hpp inc/interface.hpp inc/panel.hpp inc/searcher.hpp inc/textbox.hpp
+DEPS=inc/configuration.hpp inc/interface.hpp inc/control.hpp inc/panel.hpp inc/searcher.hpp inc/textbox.hpp
 
-_OBJS=interface.o panel.o searcher.o textbox.o
+_OBJS=main.o interface.o panel.o searcher.o textbox.o
 OBJS=$(patsubst %,$(ODIR)/%,$(_OBJS))
 
 .PHONY: all
 .PHONY: clean
 .PHONY: directories
-
-obj/main.o: main.cpp $(DEPS)
-	$(CC) -c -o $@ $< $(CFLAGS)
 
 $(ODIR)/%.o: src/%.cpp $(DEPS)
 	$(CC) -c -o $@ $< $(CFLAGS)

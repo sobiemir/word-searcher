@@ -25,7 +25,7 @@
 #include "panel.hpp"
 
 #ifdef WSD_SYSTEM_WINDOWS
-#	include "curses.h"
+#	include "../extra/curses.h"
 #else
 #	include <ncurses.h>
 #endif
@@ -133,7 +133,7 @@ public:
 	 * 
 	 * @param file Nazwa pliku do wyświetlenia.
 	 */
-	void RefreshCurrentFile( string *file );
+	void RefreshCurrentFile( std::string *file );
 
 	/**
 	 * Odświeża listę plików, w których znaleziona została fraza.

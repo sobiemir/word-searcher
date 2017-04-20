@@ -18,12 +18,13 @@
 #include <cstdlib>
 #include <string>
 
-#include "./inc/configuration.hpp"
-#include "./inc/interface.hpp"
-#include "./inc/searcher.hpp"
+#include "../inc/configuration.hpp"
+#include "../inc/interface.hpp"
+#include "../inc/searcher.hpp"
+#include "../inc/control.hpp"
 
 #ifdef WSD_SYSTEM_WINDOWS
-#	include "./inc/curses.h"
+#	include "../extra/curses.h"
 #else
 #	include <ncurses.h>
 #	include <pthread.h>
@@ -77,6 +78,8 @@ using namespace std;
  */
 int main( int argc, char *argv[] )
 {
+	Control *focused = NULL;
+
 	// inicjalizacja ncurses
 	if( initscr() == NULL )
 		return EXIT_FAILURE;
@@ -152,20 +155,26 @@ int main( int argc, char *argv[] )
 		switch( chr )
 		{
 			break;
-			case 4: // ^D
-				ws.Folder.Focus();
+			case 9: // ^I
+				ws.Folder.Focus( false );
+				focused = &ws.Folder;
 			break;
-			case 6: // ^F
-				ws.Phrase.Focus();
+			case 15: // ^O
+				ws.Phrase.Focus( false );
+				focused = &ws.Phrase;
+			break;
+			case 16: // ^P
+				ws.Filter.Focus( false );
+				focused = &ws.Filter;
 			break;
 			case 17: // ^Q
-				ws.ResultPanel.Focus();
-			break;
-			case 19: // ^S
-				ws.Filter.Focus();
+				ws.ResultPanel.Focus( false );
+				focused = &ws.ResultPanel;
 			break;
 			case 18: // ^R
 			{
+				focused = NULL;
+
 				// ustaw kryteria wyszukiwania
 				searcher.Criteria( ws.Folder.GetContent(), ws.Phrase.GetContent(), ws.Filter.GetContent() );
 
@@ -218,8 +227,10 @@ int main( int argc, char *argv[] )
 			}
 			break;
 		}
-		// wprintw( ws.MainWindow, "%d %c\n", chr, chr );
-		// wrefresh( ws.MainWindow );
+
+		// przetwarzaj wciśnięty klawisz w kontrolce
+		if( focused )
+			focused->ParseKey( chr );
 	}
 
 #ifdef WSD_SYSTEM_WINDOWS

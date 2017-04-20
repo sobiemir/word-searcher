@@ -19,18 +19,12 @@
 
 // =====================================================================================================================
 
-Interface::Interface( void )
+Interface::Interface( void ):
+	MainWindow(NULL), SearchWindow(NULL), ResultWindow(NULL), TextStyle{0, 0, 0, 0}, Searching(false)
 {
 	this->Folder = TextBox( "Folder : ", "./", 0 );
 	this->Phrase = TextBox( "Fraza  : ", ""  , 0 );
 	this->Filter = TextBox( "Filtr  : ", "*" , 0 );
-	
-	this->MainWindow = this->SearchWindow = this->ResultWindow = NULL;
-
-	this->TextStyle[0] = this->TextStyle[1] =
-	this->TextStyle[2] = this->TextStyle[3] = 0;
-
-	this->Searching = false;
 }
 
 // =====================================================================================================================
@@ -77,7 +71,7 @@ void Interface::ToggleFooterMessage( bool show, const char *message )
 
 // =====================================================================================================================
 
-void Interface::RefreshCurrentFile( string *file )
+void Interface::RefreshCurrentFile( std::string *file )
 {
 	this->SearchPanel.Print( file );
 }
@@ -130,7 +124,7 @@ void Interface::InitColors( void )
 void Interface::TerminalResize( void )
 {
 	int resultw,
-		resulth;
+	    resulth;
 
 	// usuń stare okna - trzeba odświeżyć rozmiary
 	this->DestroyWindows();
@@ -185,20 +179,16 @@ void Interface::TerminalResize( void )
 
 	// położenie paneli
 	this->ResultPanel.SetWindow( this->ResultWindow );
-	this->ResultPanel.SetDimension( resultw, resulth );
+	this->ResultPanel.SetSize( resultw, resulth );
 	this->ResultPanel.SetPosition( 0, 0 );
 
 	this->SearchPanel.SetWindow( this->SearchWindow );
-	this->SearchPanel.SetDimension( resultw, 1 );
+	this->SearchPanel.SetSize( resultw, 1 );
 	this->SearchPanel.SetPosition( 0, 0 );
 
 	// wyświetl panele
 	this->ResultPanel.Print();
 	this->SearchPanel.Print();
-
-	// wattron( this->SearchWindow, this->TextStyle[1] );
-	// mvwprintw( this->SearchWindow, 0, (COLS - 2) / 2 - 9, " [^H] Okno pomocy " );
-	// wattroff( this->SearchWindow, this->TextStyle[1] );
 
 	// odśwież wszystkie okna
 	wrefresh( this->MainWindow );

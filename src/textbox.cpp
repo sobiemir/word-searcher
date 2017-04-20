@@ -19,219 +19,190 @@
 
 // =====================================================================================================================
 
-TextBox::TextBox( string label, string content, size_t size )
+TextBox::TextBox( std::string label, std::string content, size_t size ): Control(),
+	_Label(label), _LabelStyle(0), _Content(content), _ContentStyle(0), _Shift(0), _Letters(0)
 {
-    this->_Content = content;
-    this->_Label   = label;
-    this->_Window  = NULL;
-    this->_Shift   = 0;
-    this->_Letters = 0;
-
-    this->_ContentStyle = 0;
-    this->_LabelStyle   = 0;
-
-    // oblicz rozmiar pola tekstowego, odejmując rozmiar napisu od podanej wartości
-    this->_Size = this->_Label.size() > size
-        ? 0
-        : size - this->_Label.size();
-    this->_TypeStart = this->_Position.X + this->_Label.size();
-
-    this->_Position.X = 0;
-    this->_Position.Y = 0;
-}
-
-// =====================================================================================================================
-
-TextBox &TextBox::operator = ( const TextBox &copy )
-{
-    this->_Label         = copy._Label;
-    this->_LabelStyle    = copy._LabelStyle;
-    this->_Content       = copy._Content;
-    this->_ContentStyle  = copy._ContentStyle;
-    this->_TypeStart     = copy._TypeStart;
-    this->_Size          = copy._Size;
-    this->_Position      = copy._Position;
-    this->_Window        = copy._Window;
-    this->_Shift         = copy._Shift;
-    this->_Letters       = copy._Letters;
-    this->_CaretPosition = copy._CaretPosition;
-
-    return *this;
+	// oblicz rozmiar pola tekstowego, odejmując rozmiar napisu od podanej wartości
+	this->_Size.Width = this->_Label.size() > size
+		? 0
+		: size - this->_Label.size();
+	this->_TypeStart = this->_Position.X + this->_Label.size();
 }
 
 // =====================================================================================================================
 
 void TextBox::SetPosition( int x, int y )
 {
-    this->_Position.X = x;
-    this->_Position.Y = y;
+	this->_Position.X = x;
+	this->_Position.Y = y;
 
-    this->_TypeStart = this->_Position.X + this->_Label.size();
+	this->_TypeStart = this->_Position.X + (int)this->_Label.size();
 }
 
 // =====================================================================================================================
 
-void TextBox::SetWindow( WINDOW *window )
+void TextBox::SetSize( int width )
 {
-    this->_Window = window;
-}
-
-// =====================================================================================================================
-
-void TextBox::SetSize( size_t size )
-{
-    if( this->_Label.size() > size )
-        this->_Size    = 0,
-        this->_Letters = 0;
-    else
-        this->_Size    = size - this->_Label.size(),
-        this->_Letters = this->_Content.size() > size
-            ? size
-            : this->_Content.size();
+	if( (int)this->_Label.size() > width )
+		this->_Size.Width = 0,
+		this->_Letters    = 0;
+	else
+		this->_Size.Width = width - this->_Label.size(),
+		this->_Letters    = (int)this->_Content.size() > width
+			? width
+			: this->_Content.size();
 }
 
 // =====================================================================================================================
 
 void TextBox::SetStyle( int label, int text )
 {
-    this->_ContentStyle = text;
-    this->_LabelStyle   = label;
+	this->_ContentStyle = text;
+	this->_LabelStyle   = label;
 }
 
 // =====================================================================================================================
 
-string TextBox::GetContent( void )
+std::string TextBox::GetContent( void )
 {
-    return this->_Content;
+	return this->_Content;
 }
 
 // =====================================================================================================================
 
-void TextBox::Focus( void )
+void TextBox::ParseKey( int chr )
 {
-    int chr = 0;
+	// znaki kontrolne
+	switch( chr )
+	{
+		// przejdź na koniec
+		case KEY_END:
+			this->_CaretPosition = this->_Letters;
+			this->_Shift         = this->_Content.size() - this->_Letters;
+		break;
+		// przejdź na początek
+		case KEY_HOME:
+			this->_CaretPosition = 0;
+			this->_Shift         = 0;
+		break;
+		// przesuń kursor o jeden znak w lewo
+		case KEY_LEFT:
+			if( this->_CaretPosition > 0 )
+				this->_CaretPosition--,
+				wmove( this->_Window, this->_Position.Y, this->_TypeStart + this->_CaretPosition );
+			else if( this->_Shift > 0 )
+			{
+				this->_Shift--;
+				break;
+			}
+			return;
+		break;
+		// przesuń kursor o jeden znak w prawo
+		case KEY_RIGHT:
+			if( this->_CaretPosition < this->_Letters )
+				this->_CaretPosition++,
+				wmove( this->_Window, this->_Position.Y, this->_TypeStart + this->_CaretPosition );
+			else if( this->_Content.size() > this->_Shift + this->_Letters )
+			{
+				this->_Shift++;
+				break;
+			}
+			return;
+		break;
+		// Backspace
+		case 8: case 127: case KEY_BACKSPACE:
+			// w przypadku gdy wartość jest pusta, nie rób nic...
+			if( this->_Content.size() == 0 || (this->_CaretPosition == 0 && this->_Shift == 0) )
+				return;
+			
+			this->_Content.erase( this->_Shift + this->_CaretPosition - 1, 1 );
+			
+			if( this->_Shift == 0 )
+				this->_Letters--,
+				this->_CaretPosition--;
+			else
+				this->_Shift--;
+		break;
+		// Delete - zachowanie trochę inne niż Backspace
+		case KEY_DC:
+			// w przypadku gdy wartość jest pusta, nie rób nic...
+			if( this->_Letters <= this->_CaretPosition )
+				return;
+			
+			this->_Content.erase( this->_Shift + this->_CaretPosition, 1 );
+			
+			if( this->_Shift == 0 )
+				this->_Letters--;
+			else
+				this->_Shift--;
+		break;
+		default:
+			// przyjmuj na razie tylko znaki ASCII
+			if( chr < 32 || chr > 127 )
+				return;
 
-    // przenieś kursor na ostatni znak w polu
-    this->_CaretPosition = this->_Letters;
-    wmove( this->_Window, this->_Position.Y, this->_TypeStart + this->_CaretPosition );
+			this->_Content.insert( this->_Shift + this->_CaretPosition, 1, chr );
 
-    // przetwarzaj znaki, dopóki program nie napotka znaku LF lub CR
-    while( (chr = wgetch(this->_Window)), chr != 10 && chr != 13 )
-    {
-        // własne funkcje do wywołania (na kiedyś)
-        // np. przechwytywanie CTRL + D / CTRL + F
+			if( (int)this->_Content.size() < this->_Size.Width )
+				this->_CaretPosition++,
+				this->_Letters++;
+			else
+				this->_Shift++;
+		break;
+	}
 
-        // znaki kontrolne
-        switch( chr )
-        {
-            case KEY_END:
-                this->_CaretPosition = this->_Letters;
-                this->_Shift         = this->_Content.size() - this->_Letters;
-            break;
-            case KEY_HOME:
-                this->_CaretPosition = 0;
-                this->_Shift         = 0;
-            break;
-            case KEY_LEFT:
-                if( this->_CaretPosition > 0 )
-                    this->_CaretPosition--,
-                    wmove( this->_Window, this->_Position.Y, this->_TypeStart + this->_CaretPosition );
-                else if( this->_Shift > 0 )
-                {
-                    this->_Shift--;
-                    break;
-                }
-                continue;
-            break;
-            case KEY_RIGHT:
-                if( this->_CaretPosition < this->_Letters )
-                    this->_CaretPosition++,
-                    wmove( this->_Window, this->_Position.Y, this->_TypeStart + this->_CaretPosition );
-                else if( this->_Content.size() > this->_Shift + this->_Letters )
-                {
-                    this->_Shift++;
-                    break;
-                }
-                continue;
-            break;
-            case 8: case 127: case KEY_BACKSPACE: // backspace
-                // w przypadku gdy wartość jest pusta, nie rób nic...
-                if( this->_Content.size() == 0 || (this->_CaretPosition == 0 && this->_Shift == 0) )
-                    continue;
-                
-                this->_Content.erase( this->_Shift + this->_CaretPosition - 1, 1 );
-                
-                if( this->_Shift == 0 )
-                    this->_Letters--,
-                    this->_CaretPosition--;
-                else
-                    this->_Shift--;
-            break;
-            case KEY_DC: // DELETE
-                // w przypadku gdy wartość jest pusta, nie rób nic...
-                if( this->_Letters <= this->_CaretPosition )
-                    continue;
-                
-                this->_Content.erase( this->_Shift + this->_CaretPosition, 1 );
-                
-                if( this->_Shift == 0 )
-                    this->_Letters--;
-                else
-                    this->_Shift--;
-            break;
-            case KEY_UP: case KEY_DOWN:
-                continue;
-            break;
-            default:
-                // przyjmuj na razie tylko znaki ANSII
-                if( chr < 32 || chr > 127 )
-                    continue;
+	this->Print();
+	wmove( this->_Window, this->_Position.Y, this->_TypeStart + this->_CaretPosition );
 
-                this->_Content.insert( this->_Shift + this->_CaretPosition, 1, chr );
+	wrefresh( this->_Window );
+}
 
-                if( this->_Content.size() < this->_Size )
-                    this->_CaretPosition++,
-                    this->_Letters++;
-                else
-                    this->_Shift++;
-            break;
-        }
+// =====================================================================================================================
 
-        this->Print();
-        wmove( this->_Window, this->_Position.Y, this->_TypeStart + this->_CaretPosition );
+void TextBox::Focus( bool capture )
+{
+	int chr = 0;
 
-        wrefresh( this->_Window );
-    }
+	// przenieś kursor na ostatni znak w polu
+	this->_CaretPosition = this->_Letters;
+	wmove( this->_Window, this->_Position.Y, this->_TypeStart + this->_CaretPosition );
+
+	if( !capture )
+		return;
+
+	// przechwytuj znaki, dopóki program nie napotka znaku LF lub CR
+	while( (chr = wgetch(this->_Window)), chr != 10 && chr != 13 )
+		this->ParseKey( chr );
 }
 
 // =====================================================================================================================
 
 void TextBox::Print( void )
 {
-    // wyświetl najpierw napis
-    if( this->_LabelStyle )
-        wattron( this->_Window, this->_LabelStyle );
-    mvwprintw( this->_Window, this->_Position.Y, this->_Position.X, this->_Label.c_str() );
-    if( this->_LabelStyle )
-        wattroff( this->_Window, this->_LabelStyle );
+	// wyświetl najpierw napis
+	if( this->_LabelStyle )
+		wattron( this->_Window, this->_LabelStyle );
+	mvwprintw( this->_Window, this->_Position.Y, this->_Position.X, this->_Label.c_str() );
+	if( this->_LabelStyle )
+		wattroff( this->_Window, this->_LabelStyle );
 
-    // nadpisuj litery aby w razie usuwania wymazać istniejące
-    mvwhline( this->_Window, this->_Position.Y, this->_TypeStart, ' ', this->_Size );
+	// nadpisuj litery aby w razie usuwania wymazać istniejące
+	mvwhline( this->_Window, this->_Position.Y, this->_TypeStart, ' ', this->_Size.Width );
 
-    if( this->_Letters == 0 )
-        return;
+	if( this->_Letters == 0 )
+		return;
 
-    // a potem zawartość pola tekstowego
-    if( this->_ContentStyle )
-        wattron( this->_Window, this->_ContentStyle );
-    mvwaddnstr
-    (
-        this->_Window,
-        this->_Position.Y,
-        this->_TypeStart,
-        &this->_Content.c_str()[this->_Shift],
-        this->_Letters
-    );
-    if( this->_ContentStyle )
-        wattroff( this->_Window, this->_ContentStyle );
+	// a potem zawartość pola tekstowego
+	if( this->_ContentStyle )
+		wattron( this->_Window, this->_ContentStyle );
+	mvwaddnstr
+	(
+		this->_Window,
+		this->_Position.Y,
+		this->_TypeStart,
+		&this->_Content.c_str()[this->_Shift],
+		this->_Letters
+	);
+	if( this->_ContentStyle )
+		wattroff( this->_Window, this->_ContentStyle );
 }

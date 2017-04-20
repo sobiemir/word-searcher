@@ -20,9 +20,9 @@
 
 // sprawdź z jakim systemem program ma do czynienia
 #ifdef _WIN32
-#   define WSD_SYSTEM_WINDOWS
+#	define WSD_SYSTEM_WINDOWS
 #elif defined __linux__
-#   define WSD_SYSTEM_LINUX
+#	define WSD_SYSTEM_LINUX
 #endif
 
 /**
@@ -44,16 +44,19 @@
  */
 template <typename T> struct Vector2
 {
-    union
-    {
-        T X;
-        T Width;
-    };
-    union
-    {
-        T Y;
-        T Height;
-    };
+public:
+	union
+	{
+		T X;
+		T Width;
+	};
+	union
+	{
+		T Y;
+		T Height;
+	};
+	Vector2<T>( void ):
+		X(0), Y(0) {}
 };
 
 #endif

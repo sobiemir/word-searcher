@@ -59,9 +59,9 @@ Od wersji 0.2.2 możliwe jest przerwanie uruchomionego wyszukiwania bez konieczn
 Lista skrótów klawiaturowych, dostępnych w programie:
   
   * `CTRL + C` - kończy działanie programu lub przerywa wyszukiwanie.
-  * `CTRL + S` - ustawia skupienie na polu tekstowym, pozwalającym na zmianę filtra.
-  * `CTRL + D` - ustawia skupienie na polu tekstowym, pozwalającym na zmianę folderu.
-  * `CTRL + F` - ustawia skupienie na polu tekstowym, pozwalającym na zmianę frazy.
+  * `CTRL + I` - ustawia skupienie na polu tekstowym, pozwalającym na zmianę filtra.
+  * `CTRL + O` - ustawia skupienie na polu tekstowym, pozwalającym na zmianę folderu.
+  * `CTRL + P` - ustawia skupienie na polu tekstowym, pozwalającym na zmianę frazy.
   * `CTRL + Q` - ustawia skupienie na polu, dzięki czemu możliwe jest przewijanie wyników wyszukiwania.
 
 Funkcja przerywa wyszukiwanie, dopiero gdy skończy szukać frazy w otwartym pliku.
@@ -80,6 +80,10 @@ Obok wersji 0.2.x rozwijana jest wersja 0.1.x, która działa bezpośrednio na k
   * _v0.2.2_
     * Przeniesiono działanie kodu wyszukiwarki do osobnego wątku.
     * Kombinacja klawiszy CTRL + C powoduje przerwanie wyszukiwania.
+    * Dodano informację o wyszukiwaniu (napis po rozpoczęciu wyszukiwania)
+    * Dodano zabezpieczenie przed przypadkowym zamknięciem programu, teraz po wciśnięciu kombinacji klawiszy CTRL + C,
+      należy dodatkowo wcisnąć klawisz ESC.
+    * Zmieniono klawisze dostępu do pól tekstowych na CTRL + (I/O/P).
   * _v0.1.4_
     * Utworzono filtrowanie rozszerzeń plików.
     * Dodano możliwość wyłączenia wyszukiwania przyrostowego.
