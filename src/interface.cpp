@@ -21,181 +21,201 @@
 
 Interface::Interface( void )
 {
-    this->Folder = TextBox( "Folder : ", "./", 0 );
-    this->Phrase = TextBox( "Fraza  : ", ""  , 0 );
-    this->Filter = TextBox( "Filtr  : ", "*" , 0 );
-    
-    this->MainWindow = this->SearchWindow = this->ResultWindow = NULL;
+	this->Folder = TextBox( "Folder : ", "./", 0 );
+	this->Phrase = TextBox( "Fraza  : ", ""  , 0 );
+	this->Filter = TextBox( "Filtr  : ", "*" , 0 );
+	
+	this->MainWindow = this->SearchWindow = this->ResultWindow = NULL;
 
-    this->TextStyle[0] = this->TextStyle[1] =
-    this->TextStyle[2] = this->TextStyle[3] = 0;
+	this->TextStyle[0] = this->TextStyle[1] =
+	this->TextStyle[2] = this->TextStyle[3] = 0;
 
-    this->Searching = false;
+	this->Searching = false;
 }
 
 // =====================================================================================================================
 
 Interface::~Interface( void )
 {
-    this->DestroyWindows();
+	this->DestroyWindows();
 }
 
 // =====================================================================================================================
 
-void Interface::ToggleWantToLeave( bool show )
+void Interface::ToggleHeaderMessage( bool show, const char *message )
 {
-    wattron( this->MainWindow, this->TextStyle[1] );
+	mvwhline( this->MainWindow, 1, 1, ' ', COLS - 2 );
+	mvwhline( this->MainWindow, 2, 1, ' ', COLS - 2 );
+	mvwhline( this->MainWindow, 3, 1, ' ', COLS - 2 );
 
-    if( show )
-        mvwprintw( this->MainWindow, LINES - 1, 2, " Sekwencja ^C + ESC " );
-    else
-        mvwhline( this->MainWindow, LINES - 1, 1, ACS_HLINE, COLS - 2 );
+	if( show )
+		wattron( this->MainWindow, this->TextStyle[2] ),
+		mvwprintw( this->MainWindow, 2, COLS / 2 - strlen(message) / 2, message ),
+		wattron( this->MainWindow, this->TextStyle[2] );
+	else
+		this->Folder.Print(),
+		this->Phrase.Print(),
+		this->Filter.Print();
 
-    wattroff( this->MainWindow, this->TextStyle[1] );
-    wrefresh( this->MainWindow );
+	wrefresh( this->MainWindow );
+}
+
+// =====================================================================================================================
+
+void Interface::ToggleFooterMessage( bool show, const char *message )
+{
+	wattron( this->MainWindow, this->TextStyle[1] );
+
+	if( show )
+		mvwprintw( this->MainWindow, LINES - 1, 2, message );
+	else
+		mvwhline( this->MainWindow, LINES - 1, 1, ACS_HLINE, COLS - 2 );
+
+	wattroff( this->MainWindow, this->TextStyle[1] );
+	wrefresh( this->MainWindow );
 }
 
 // =====================================================================================================================
 
 void Interface::RefreshCurrentFile( string *file )
 {
-    this->SearchPanel.Print( file );
+	this->SearchPanel.Print( file );
 }
 
 // =====================================================================================================================
 
 void Interface::RefreshPrintedFiles( void )
 {
-    this->ResultPanel.RefreshTextSource();
-    this->ResultPanel.Print();
+	this->ResultPanel.RefreshTextSource();
+	this->ResultPanel.Print();
 }
 
 // =====================================================================================================================
 
 void Interface::InitColors( void )
 {
-    int colors    = has_colors();
-    int defcolors = (use_default_colors() != ERR);
+	int colors    = has_colors();
+	int defcolors = (use_default_colors() != ERR);
 
-    // jeżeli terminal nie obsługuje albo nie pozwala na wyświetlanie kolorów, pomiń
-    if( !colors )
-        return;
+	// jeżeli terminal nie obsługuje albo nie pozwala na wyświetlanie kolorów, pomiń
+	if( !colors )
+		return;
 
-    start_color();
+	start_color();
 
-    // jeżeli terminal pozwala na wyświetlanie domyślnego koloru
-    if( defcolors )
-        init_pair( 1, COLOR_BLUE,   -1 ),
-        init_pair( 2, COLOR_YELLOW, -1 ),
-        init_pair( 3, COLOR_BLACK,  COLOR_WHITE ),
-        init_pair( 4, COLOR_BLACK,  COLOR_YELLOW );
-    else
-        init_pair( 1, COLOR_BLUE,   COLOR_BLACK ),
-        init_pair( 2, COLOR_YELLOW, COLOR_BLACK ),
-        init_pair( 3, COLOR_BLACK,  COLOR_WHITE ),
-        init_pair( 4, COLOR_BLACK,  COLOR_YELLOW );
+	// jeżeli terminal pozwala na wyświetlanie domyślnego koloru
+	if( defcolors )
+		init_pair( 1, COLOR_BLUE,   -1 ),
+		init_pair( 2, COLOR_YELLOW, -1 ),
+		init_pair( 3, COLOR_BLACK,  COLOR_WHITE ),
+		init_pair( 4, COLOR_BLACK,  COLOR_YELLOW );
+	else
+		init_pair( 1, COLOR_BLUE,   COLOR_BLACK ),
+		init_pair( 2, COLOR_YELLOW, COLOR_BLACK ),
+		init_pair( 3, COLOR_BLACK,  COLOR_WHITE ),
+		init_pair( 4, COLOR_BLACK,  COLOR_YELLOW );
 
-    this->TextStyle[0] = COLOR_PAIR(1);
-    this->TextStyle[1] = COLOR_PAIR(2);
-    this->TextStyle[2] = COLOR_PAIR(3);
-    this->TextStyle[3] = A_BOLD | COLOR_PAIR(4);
-    
-    this->Folder.SetStyle( this->TextStyle[0], 0 );
-    this->Phrase.SetStyle( this->TextStyle[0], 0 );
-    this->Filter.SetStyle( this->TextStyle[0], 0 );
+	this->TextStyle[0] = COLOR_PAIR(1);
+	this->TextStyle[1] = COLOR_PAIR(2);
+	this->TextStyle[2] = COLOR_PAIR(3);
+	this->TextStyle[3] = A_BOLD | COLOR_PAIR(4);
+	
+	this->Folder.SetStyle( this->TextStyle[0], 0 );
+	this->Phrase.SetStyle( this->TextStyle[0], 0 );
+	this->Filter.SetStyle( this->TextStyle[0], 0 );
 }
 
 // =====================================================================================================================
 
 void Interface::TerminalResize( void )
 {
-    int resultw,
-        resulth;
+	int resultw,
+		resulth;
 
-    // usuń stare okna - trzeba odświeżyć rozmiary
-    this->DestroyWindows();
+	// usuń stare okna - trzeba odświeżyć rozmiary
+	this->DestroyWindows();
 
-    resultw = COLS - 2;
-    resulth = LINES - 8;
+	resultw = COLS - 2;
+	resulth = LINES - 8;
 
-    // utwórz nowe okna
-    if( !(this->MainWindow = newwin(LINES, COLS, 0, 0)) )
-        exit( EXIT_FAILURE );
-    if( !(this->SearchWindow = newwin(1, resultw, 5, 1)) )
-        exit( EXIT_FAILURE );
-    if( !(this->ResultWindow = newwin(resulth, resultw, 7, 1)) )
-        exit( EXIT_FAILURE );
+	// utwórz nowe okna
+	if( !(this->MainWindow = newwin(LINES, COLS, 0, 0)) )
+		exit( EXIT_FAILURE );
+	if( !(this->SearchWindow = newwin(1, resultw, 5, 1)) )
+		exit( EXIT_FAILURE );
+	if( !(this->ResultWindow = newwin(resulth, resultw, 7, 1)) )
+		exit( EXIT_FAILURE );
 
-    keypad( this->MainWindow, TRUE );
-    keypad( this->ResultWindow, TRUE );
+	keypad( this->MainWindow, TRUE );
+	keypad( this->ResultWindow, TRUE );
 
-    // położenie pól tekstowych
-    this->Folder.SetSize( COLS - 2 );
-    this->Folder.SetWindow( this->MainWindow );
-    this->Folder.SetPosition( 1, 1 );
+	// położenie pól tekstowych
+	this->Folder.SetSize( COLS - 2 );
+	this->Folder.SetWindow( this->MainWindow );
+	this->Folder.SetPosition( 1, 1 );
 
-    this->Phrase.SetSize( COLS - 2 );
-    this->Phrase.SetWindow( this->MainWindow );
-    this->Phrase.SetPosition( 1, 2 );
+	this->Phrase.SetSize( COLS - 2 );
+	this->Phrase.SetWindow( this->MainWindow );
+	this->Phrase.SetPosition( 1, 2 );
 
-    this->Filter.SetSize( COLS - 2 );
-    this->Filter.SetWindow( this->MainWindow );
-    this->Filter.SetPosition( 1, 3 );
+	this->Filter.SetSize( COLS - 2 );
+	this->Filter.SetWindow( this->MainWindow );
+	this->Filter.SetPosition( 1, 3 );
 
-    // ramka wokół programu
-    wattron( this->MainWindow, this->TextStyle[1] );
-    wborder(
-        this->MainWindow,
-        ACS_VLINE,    ACS_VLINE,
-        ACS_HLINE,    ACS_HLINE,
-        ACS_ULCORNER, ACS_URCORNER,
-        ACS_LLCORNER, ACS_LRCORNER
-    );
-    mvwprintw( this->MainWindow, 0, COLS - 23, " WordSearcher v0.2.2 " );
-    wattroff( this->MainWindow, this->TextStyle[1] );
+	// ramka wokół programu
+	wattron( this->MainWindow, this->TextStyle[1] );
+	wborder(
+		this->MainWindow,
+		ACS_VLINE,    ACS_VLINE,
+		ACS_HLINE,    ACS_HLINE,
+		ACS_ULCORNER, ACS_URCORNER,
+		ACS_LLCORNER, ACS_LRCORNER
+	);
+	mvwprintw( this->MainWindow, 0, COLS - 23, " WordSearcher v0.2.2 " );
+	wattroff( this->MainWindow, this->TextStyle[1] );
 
-    // wyświetl pola tekstowe
-    this->Folder.Print();
-    this->Phrase.Print();
-    this->Filter.Print();
+	// wyświetl pola tekstowe
+	this->Folder.Print();
+	this->Phrase.Print();
+	this->Filter.Print();
 
-    // linie oddzielające aktualnie przeszukiwany folder i listę znalezionych plików
-    mvwhline( this->MainWindow, 4, 1, ACS_HLINE, COLS - 2 );
-    mvwhline( this->MainWindow, 6, 1, ACS_HLINE, COLS - 2 );
+	// linie oddzielające aktualnie przeszukiwany folder i listę znalezionych plików
+	mvwhline( this->MainWindow, 4, 1, ACS_HLINE, COLS - 2 );
+	mvwhline( this->MainWindow, 6, 1, ACS_HLINE, COLS - 2 );
 
-    // położenie paneli
-    this->ResultPanel.SetWindow( this->ResultWindow );
-    this->ResultPanel.SetDimension( resultw, resulth );
-    this->ResultPanel.SetPosition( 0, 0 );
+	// położenie paneli
+	this->ResultPanel.SetWindow( this->ResultWindow );
+	this->ResultPanel.SetDimension( resultw, resulth );
+	this->ResultPanel.SetPosition( 0, 0 );
 
-    this->SearchPanel.SetWindow( this->SearchWindow );
-    this->SearchPanel.SetDimension( resultw, 1 );
-    this->SearchPanel.SetPosition( 0, 0 );
+	this->SearchPanel.SetWindow( this->SearchWindow );
+	this->SearchPanel.SetDimension( resultw, 1 );
+	this->SearchPanel.SetPosition( 0, 0 );
 
-    // wyświetl panele
-    this->ResultPanel.Print();
-    this->SearchPanel.Print();
+	// wyświetl panele
+	this->ResultPanel.Print();
+	this->SearchPanel.Print();
 
-    // wattron( this->SearchWindow, this->TextStyle[1] );
-    // mvwprintw( this->SearchWindow, 0, (COLS - 2) / 2 - 9, " [^H] Okno pomocy " );
-    // wattroff( this->SearchWindow, this->TextStyle[1] );
+	// wattron( this->SearchWindow, this->TextStyle[1] );
+	// mvwprintw( this->SearchWindow, 0, (COLS - 2) / 2 - 9, " [^H] Okno pomocy " );
+	// wattroff( this->SearchWindow, this->TextStyle[1] );
 
-    // odśwież wszystkie okna
-    wrefresh( this->MainWindow );
-    wrefresh( this->SearchWindow );
-    wrefresh( this->ResultWindow );
+	// odśwież wszystkie okna
+	wrefresh( this->MainWindow );
+	wrefresh( this->SearchWindow );
+	wrefresh( this->ResultWindow );
 }
 
 // =====================================================================================================================
 
 void Interface::DestroyWindows( void )
 {
-    if( this->MainWindow )
-        delwin( this->MainWindow );
-    if( this->SearchWindow )
-        delwin( this->SearchWindow );
-    if( this->ResultWindow )
-        delwin( this->ResultWindow );
-    
-    this->MainWindow = this->SearchWindow = this->ResultWindow = NULL;
+	if( this->MainWindow )
+		delwin( this->MainWindow );
+	if( this->SearchWindow )
+		delwin( this->SearchWindow );
+	if( this->ResultWindow )
+		delwin( this->ResultWindow );
+	
+	this->MainWindow = this->SearchWindow = this->ResultWindow = NULL;
 }

@@ -1,4 +1,5 @@
-wordsearcher
 .vscode/*
-a.out
+.sublime/*
 obj/*
+wordsearcher
+a.out

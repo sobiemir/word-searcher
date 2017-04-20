@@ -18,15 +18,16 @@
 #ifndef __WSH_INTERFACE__
 #define __WSH_INTERFACE__
 
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstring>
 #include "configuration.hpp"
 #include "textbox.hpp"
 #include "panel.hpp"
 
 #ifdef WSD_SYSTEM_WINDOWS
-#   include "curses.h"
+#	include "curses.h"
 #else
-#   include <ncurses.h>
+#	include <ncurses.h>
 #endif
 
 /**
@@ -38,121 +39,128 @@
 class Interface
 {
 public:
-    /**
-     * Okno główne.
-     * W oknie tym znajdują się pola tekstowe, odpowiedzialne za filtr, folder i frazę.
-     */
-    WINDOW *MainWindow;
-    /**
-     * Okno wyszukiwania.
-     * Do okna podpięty jest panel wyszukiwania, w którym wyświetlany jest aktualnie przetwarzany plik.
-     */
-    WINDOW *SearchWindow;
-    /**
-     * Okno wyników.
-     * Do okna podpięty jest panel wyników, w którym wyświetlana jest lista plików spełniających
-     * kryteria wyszukiwania.
-     */
-    WINDOW *ResultWindow;
+	/**
+	 * Okno główne.
+	 * W oknie tym znajdują się pola tekstowe, odpowiedzialne za filtr, folder i frazę.
+	 */
+	WINDOW *MainWindow;
+	/**
+	 * Okno wyszukiwania.
+	 * Do okna podpięty jest panel wyszukiwania, w którym wyświetlany jest aktualnie przetwarzany plik.
+	 */
+	WINDOW *SearchWindow;
+	/**
+	 * Okno wyników.
+	 * Do okna podpięty jest panel wyników, w którym wyświetlana jest lista plików spełniających
+	 * kryteria wyszukiwania.
+	 */
+	WINDOW *ResultWindow;
 
-    /**
-     * Pole tekstowe dla folderu.
-     * Dostępne po wciśnięciu kombinacji klawiszy CTRL + D.
-     */
-    TextBox Folder;
-    /**
-     * Pole tekstowe dla frazy.
-     * Dostępne po wciśnięciu kombinacji klawiszy CTRL + F.
-     */
-    TextBox Phrase;
-    /**
-     * Pole tekstowe dla filtru.
-     * Dostępne po wciśnięciu kombinacji klawiszy CTRL + S.
-     */
-    TextBox Filter;
+	/**
+	 * Pole tekstowe dla folderu.
+	 * Dostępne po wciśnięciu kombinacji klawiszy CTRL + D.
+	 */
+	TextBox Folder;
+	/**
+	 * Pole tekstowe dla frazy.
+	 * Dostępne po wciśnięciu kombinacji klawiszy CTRL + F.
+	 */
+	TextBox Phrase;
+	/**
+	 * Pole tekstowe dla filtru.
+	 * Dostępne po wciśnięciu kombinacji klawiszy CTRL + S.
+	 */
+	TextBox Filter;
 
-    /**
-     * Panel wyszukiwania.
-     * Wyświetla aktualnie przeszukiwany plik przez klasę Searcher.
-     */
-    Panel SearchPanel;
-    /**
-     * Panel wyników.
-     * Wyświetla wszystkie pliki, spełniające kryteria wyszukiwania.
-     */
-    Panel ResultPanel;
+	/**
+	 * Panel wyszukiwania.
+	 * Wyświetla aktualnie przeszukiwany plik przez klasę Searcher.
+	 */
+	Panel SearchPanel;
+	/**
+	 * Panel wyników.
+	 * Wyświetla wszystkie pliki, spełniające kryteria wyszukiwania.
+	 */
+	Panel ResultPanel;
 
-    /**
-     * Style czcionek.
-     * Zawiera style, w jakich wyświetlane są teksty.
-     * W przypadku gdy konsola nie obsługuje koloru, wszystkie wartości ustawione są na 0.
-     */
-    int TextStyle[4];
+	/**
+	 * Style czcionek.
+	 * Zawiera style, w jakich wyświetlane są teksty.
+	 * W przypadku gdy konsola nie obsługuje koloru, wszystkie wartości ustawione są na 0.
+	 */
+	int TextStyle[4];
 
-    /**
-     * Informacja o uruchomieniu wyszukiwarki.
-     * Gdy klasa odpowiedzialna za wyszukiwanie zostanie uruchomiona, zmienna będzie zawierała wartość TRUE.
-     * Zmienna używana w pętli głównej programu.
-     */
-    bool Searching;
+	/**
+	 * Informacja o uruchomieniu wyszukiwarki.
+	 * Gdy klasa odpowiedzialna za wyszukiwanie zostanie uruchomiona, zmienna będzie zawierała wartość TRUE.
+	 * Zmienna używana w pętli głównej programu.
+	 */
+	bool Searching;
 
 // =====================================================================================================================
 
-    /**
-     * Konstruktor klasy.
-     * Uzupełnia pola klasy domyślnymi wartościami.
-     */
-    Interface( void );
+	/**
+	 * Konstruktor klasy.
+	 * Uzupełnia pola klasy domyślnymi wartościami.
+	 */
+	Interface( void );
 
-    /**
-     * Destruktor klasy.
-     * Niszczy utworzone wcześniej okna aplikacji.
-     */
-    ~Interface( void );
+	/**
+	 * Destruktor klasy.
+	 * Niszczy utworzone wcześniej okna aplikacji.
+	 */
+	~Interface( void );
 
-    /**
-     * Wyświetla informację o próbie wyjściu z programu.
-     * Działanie programu można zakończyć, wciskając kombinację klawiszy CTRL + C oraz ESC.
-     * Po wciśnięciu CTRL + C należy wcisnąć klawisz ESC, o czym informuje ta funkcja.
-     * 
-     * @param show Czy pokazać informację o wyjściu z programu?
-     */
-    void ToggleWantToLeave( bool show = true );
+	/**
+	 * Wyświetla przekazaną informację w stopce.
+	 * 
+	 * @param show    Pokazać wiadomość czy wyczyścić ekran?
+	 * @param message Wiadomość do wyświetlenia.
+	 */
+	void ToggleFooterMessage( bool show = true, const char *message = "" );
 
-    /**
-     * Odświeża linię aktualnie przeszukiwanego pliku.
-     * Funkcja wywoływana z poziomu klasy Searcher.
-     * 
-     * @param file Nazwa pliku do wyświetlenia.
-     */
-    void RefreshCurrentFile( string *file );
+	/**
+	 * Wyświetla przekazaną informację w nagłówku.
+	 * 
+	 * @param show    Pokazać wiadomość czy wyczyścić ekran?
+	 * @param message Wiadomość do wyświetlenia.
+	 */
+	void ToggleHeaderMessage( bool show = false, const char *message = "" );
 
-    /**
-     * Odświeża listę plików, w których znaleziona została fraza.
-     * Funkcja wywolywana z poziomu klasy Searcher.
-     * Odwołanie do niej występuje tylko, gdy w przetwarzanym pliku znaleziona została fraza.
-     * Pozwala na ponowne wypisanie listy plików w panelu i wyświetlenie aktualnych wyników.
-     */
-    void RefreshPrintedFiles( void );
+	/**
+	 * Odświeża linię aktualnie przeszukiwanego pliku.
+	 * Funkcja wywoływana z poziomu klasy Searcher.
+	 * 
+	 * @param file Nazwa pliku do wyświetlenia.
+	 */
+	void RefreshCurrentFile( string *file );
 
-    /**
-     * Inicjalizuje kolory w terminalu.
-     * W przypadku gdy terminal nie obsługuje kolorów, funkcja zamyka się automatycznie.
-     */
-    void InitColors( void );
+	/**
+	 * Odświeża listę plików, w których znaleziona została fraza.
+	 * Funkcja wywolywana z poziomu klasy Searcher.
+	 * Odwołanie do niej występuje tylko, gdy w przetwarzanym pliku znaleziona została fraza.
+	 * Pozwala na ponowne wypisanie listy plików w panelu i wyświetlenie aktualnych wyników.
+	 */
+	void RefreshPrintedFiles( void );
 
-    /**
-     * Zmienia wymiary okien aplikacji.
-     * Funkcja powinna być wywoływana w trakcie zmiany rozmiaru konsoli / terminala.
-     * Pozwala na dopasowanie interfejsu aplikacji do aktualnych wymiarów okna terminala.
-     */
-    void TerminalResize( void );
+	/**
+	 * Inicjalizuje kolory w terminalu.
+	 * W przypadku gdy terminal nie obsługuje kolorów, funkcja zamyka się automatycznie.
+	 */
+	void InitColors( void );
 
-    /**
-     * Zwalnia pamięć po utworzonych oknach.
-     * Funkcja wywoływana przez destruktor i funkcje dopasowującą interfejs do rozmiaru terminala.
-     */
-    void DestroyWindows( void );
+	/**
+	 * Zmienia wymiary okien aplikacji.
+	 * Funkcja powinna być wywoływana w trakcie zmiany rozmiaru konsoli / terminala.
+	 * Pozwala na dopasowanie interfejsu aplikacji do aktualnych wymiarów okna terminala.
+	 */
+	void TerminalResize( void );
+
+	/**
+	 * Zwalnia pamięć po utworzonych oknach.
+	 * Funkcja wywoływana przez destruktor i funkcje dopasowującą interfejs do rozmiaru terminala.
+	 */
+	void DestroyWindows( void );
 };
 
 #endif

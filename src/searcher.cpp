@@ -82,6 +82,9 @@ void Searcher::Run( void )
     this->Searching          = true;
     this->Printer->Searching = true;
 
+    this->Printer->ToggleHeaderMessage( true, " ...wyszukiwanie... " );
+    this->Printer->ToggleFooterMessage( true, " Wcisnij ^C aby przerwac " );
+
 #ifdef WSD_SYSTEM_WINDOWS
     WakeConditionVariable( &this->Condition );
 #else
@@ -181,6 +184,8 @@ void Searcher::Run( void )
 
     // zatrzymaj wyszukiwanie
     this->Printer->Searching = false;
+    this->Printer->ToggleHeaderMessage( false );
+    this->Printer->ToggleFooterMessage( false );
 }
 
 // =====================================================================================================================
