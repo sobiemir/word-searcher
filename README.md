@@ -3,7 +3,9 @@
 Program pozwala na wyszukiwanie frazy w plikach, znajdujących się w podanym katalogu.
 Program działa w konsoli zarówno na systemie Windows, jak i na systemie Linux.
 
-W przypadku systemu Linux, jedyne co wystarczy zrobić to odpalić skrypt `compile.sh`.
+Do projektu dołączony został plik Makefile.
+W przypadku systemów, w których zainstalowany jest `make` oraz `g++` z `lpthread` i `ncurses`, wystarczy uruchomić w konsoli polecenie `make`, aby skompilować program i utworzyć potrzebne foldery.
+W przypadku pierwszej kompilacji, warto jednak uruchomić polecenie `make all`, aby utworzyć potrzebne foldery, do których zapisywane będą pliki tworzone przez `g++`.
 Po poprawnej kompilacji utworzony zostanie plik `wordsearcher`.
 
 Od wersji 0.2.0 aplikacja działa w oparciu o bibliotekę NCurses *(New Curses)*.
