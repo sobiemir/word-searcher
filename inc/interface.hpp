@@ -54,11 +54,6 @@ public:
      * kryteria wyszukiwania.
      */
     WINDOW *ResultWindow;
-    /**
-     * Okno pomocy.
-     * Wyświetla informacje o programie wraz z listą dostępnych skrótów klawiaturowych.
-     */
-    WINDOW *HelpWindow;
 
     /**
      * Pole tekstowe dla folderu.
@@ -114,6 +109,15 @@ public:
      * Niszczy utworzone wcześniej okna aplikacji.
      */
     ~Interface( void );
+
+    /**
+     * Wyświetla informację o próbie wyjściu z programu.
+     * Działanie programu można zakończyć, wciskając kombinację klawiszy CTRL + C oraz ESC.
+     * Po wciśnięciu CTRL + C należy wcisnąć klawisz ESC, o czym informuje ta funkcja.
+     * 
+     * @param show Czy pokazać informację o wyjściu z programu?
+     */
+    void ToggleWantToLeave( bool show = true );
 
     /**
      * Odświeża linię aktualnie przeszukiwanego pliku.

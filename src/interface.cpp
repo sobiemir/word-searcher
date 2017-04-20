@@ -25,8 +25,7 @@ Interface::Interface( void )
     this->Phrase = TextBox( "Fraza  : ", ""  , 0 );
     this->Filter = TextBox( "Filtr  : ", "*" , 0 );
     
-    this->MainWindow = this->SearchWindow =
-    this->HelpWindow = this->ResultWindow = NULL;
+    this->MainWindow = this->SearchWindow = this->ResultWindow = NULL;
 
     this->TextStyle[0] = this->TextStyle[1] =
     this->TextStyle[2] = this->TextStyle[3] = 0;
@@ -39,6 +38,21 @@ Interface::Interface( void )
 Interface::~Interface( void )
 {
     this->DestroyWindows();
+}
+
+// =====================================================================================================================
+
+void Interface::ToggleWantToLeave( bool show )
+{
+    wattron( this->MainWindow, this->TextStyle[1] );
+
+    if( show )
+        mvwprintw( this->MainWindow, LINES - 1, 2, " Sekwencja ^C + ESC " );
+    else
+        mvwhline( this->MainWindow, LINES - 1, 1, ACS_HLINE, COLS - 2 );
+
+    wattroff( this->MainWindow, this->TextStyle[1] );
+    wrefresh( this->MainWindow );
 }
 
 // =====================================================================================================================
@@ -71,19 +85,15 @@ void Interface::InitColors( void )
 
     // jeżeli terminal pozwala na wyświetlanie domyślnego koloru
     if( defcolors )
-    {
-        init_pair( 1, COLOR_CYAN, -1 );
-        init_pair( 2, COLOR_YELLOW, -1 );
-        init_pair( 3, COLOR_BLACK, COLOR_WHITE );
-        init_pair( 4, COLOR_BLACK, COLOR_YELLOW );
-    }
+        init_pair( 1, COLOR_BLUE,   -1 ),
+        init_pair( 2, COLOR_YELLOW, -1 ),
+        init_pair( 3, COLOR_BLACK,  COLOR_WHITE ),
+        init_pair( 4, COLOR_BLACK,  COLOR_YELLOW );
     else
-    {
-        init_pair( 1, COLOR_CYAN, COLOR_BLACK );
-        init_pair( 2, COLOR_YELLOW, COLOR_BLACK );
-        init_pair( 3, COLOR_BLACK, COLOR_WHITE );
-        init_pair( 4, COLOR_BLACK, COLOR_YELLOW );
-    }
+        init_pair( 1, COLOR_BLUE,   COLOR_BLACK ),
+        init_pair( 2, COLOR_YELLOW, COLOR_BLACK ),
+        init_pair( 3, COLOR_BLACK,  COLOR_WHITE ),
+        init_pair( 4, COLOR_BLACK,  COLOR_YELLOW );
 
     this->TextStyle[0] = COLOR_PAIR(1);
     this->TextStyle[1] = COLOR_PAIR(2);
@@ -186,9 +196,6 @@ void Interface::DestroyWindows( void )
         delwin( this->SearchWindow );
     if( this->ResultWindow )
         delwin( this->ResultWindow );
-    if( this->HelpWindow )
-        delwin( this->HelpWindow );
     
-    this->MainWindow = this->SearchWindow =
-    this->HelpWindow = this->ResultWindow = NULL;
+    this->MainWindow = this->SearchWindow = this->ResultWindow = NULL;
 }

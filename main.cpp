@@ -85,6 +85,7 @@ int main( int argc, char *argv[] )
     nonl();
     noecho();
     keypad( stdscr, TRUE );
+    set_escdelay( 0 );
 
     Interface ws;
     Searcher  searcher;
@@ -96,7 +97,8 @@ int main( int argc, char *argv[] )
     ws.InitColors();
     ws.TerminalResize();
 
-    bool run = true;
+    bool run    = true;
+    bool really = false;
 
 #ifdef WSD_SYSTEM_WINDOWS
     DWORD  threadid = 0;
@@ -121,15 +123,21 @@ int main( int argc, char *argv[] )
 #   endif
 
         // reakcje na specjalne zdarzenia, działające podczas wyszukiwania
-        if( chr == 3 )
+        if( chr == 3 ) // ^C
             if( ws.Searching )
                 searcher.Searching = false;
             else
-                run = false;
+                really = true,
+                ws.ToggleWantToLeave( true );
 #       ifdef KEY_RESIZE
         else if( chr == KEY_RESIZE )
             ws.TerminalResize();
 #       endif
+        else if( chr == 27 && really == true ) // ESC
+            run = false;
+        else
+            really = false,
+            ws.ToggleWantToLeave( false );
 
         // jeżeli wyszukiwanie się rozpoczęło, pozostaw akcje pod spodem w spokoju
         if( ws.Searching )
@@ -137,6 +145,7 @@ int main( int argc, char *argv[] )
 
         switch( chr )
         {
+            break;
             case 4: // ^D
                 ws.Folder.Focus();
             break;
